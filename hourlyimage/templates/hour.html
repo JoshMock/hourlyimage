@@ -1,0 +1,10 @@
+<h1>Available images</h1>
+{% if images %}
+    <ol>
+    {% for image in images|sort %}
+        <li><img src="{{ image }}" alt="" /></li>
+    {% endfor %}
+    </ol>
+{% else %}
+    No images found.
+{% endif %}

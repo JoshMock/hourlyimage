@@ -28,74 +28,91 @@ class HourlyImageTestCase(unittest.TestCase):
         os.unlink("static/zzz_test_images")
 
     def test_list_directories_valueerror(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
         try:
-            utilities.list_directories(month="01")
+            utilities.list_directories(path, month="01")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_directories(year="blah", month="01")
+            utilities.list_directories(path, year="blah", month="01")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_directories(year="-1", month="01")
+            utilities.list_directories(path, year="-1", month="01")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_directories(year="10000", month="01")
+            utilities.list_directories(path, year="10000", month="01")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_directories(year="2012", month="blah")
+            utilities.list_directories(path, year="2012", month="blah")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_directories(year="2012", month="-1")
+            utilities.list_directories(path, year="2012", month="-1")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_directories(year="2012", month="13")
+            utilities.list_directories(path, year="2012", month="13")
         except Exception, e:
             assert isinstance(e, ValueError)
 
     def test_list_images_valueerror(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+        url = hourlyimage.app.config["IMAGE_LOCATION_URL"]
+
         try:
-            utilities.list_images("blah", "01", "01")
+            utilities.list_images(path, url, "blah", "01", "01")
         except Exception, e:
             assert isinstance(e, ValueError)
         try:
-            utilities.list_images("-1", "01", "01")
+            utilities.list_images(path, url, "-1", "01", "01")
         except Exception, e:
             assert isinstance(e, ValueError)
         try:
-            utilities.list_images("100000", "01", "01")
+            utilities.list_images(path, url, "100000", "01", "01")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_images("2012", "blah", "01")
+            utilities.list_images(path, url, "2012", "blah", "01")
         except Exception, e:
             assert isinstance(e, ValueError)
         try:
-            utilities.list_images("2012", "-1", "01")
+            utilities.list_images(path, url, "2012", "-1", "01")
         except Exception, e:
             assert isinstance(e, ValueError)
         try:
-            utilities.list_images("2012", "13", "01")
+            utilities.list_images(path, url, "2012", "13", "01")
         except Exception, e:
             assert isinstance(e, ValueError)
 
         try:
-            utilities.list_images("2011", "02", "blah")
+            utilities.list_images(path, url, "2011", "02", "blah")
         except Exception, e:
             assert isinstance(e, ValueError)
         try:
-            utilities.list_images("2011", "02", "29")
+            utilities.list_images(path, url, "2011", "02", "29")
+        except Exception, e:
+            assert isinstance(e, ValueError)
+
+        try:
+            utilities.list_images(path, url, "2011", "02", "01", "blah")
+        except Exception, e:
+            assert isinstance(e, ValueError)
+        try:
+            utilities.list_images(path, url, "2011", "02", "01", "-1")
+        except Exception, e:
+            assert isinstance(e, ValueError)
+        try:
+            utilities.list_images(path, url, "2011", "02", "01", "25")
         except Exception, e:
             assert isinstance(e, ValueError)
 
@@ -109,10 +126,18 @@ class HourlyImageTestCase(unittest.TestCase):
         file1 = open("%s/2011/04/01/01.jpg" % path, "w")
         file1.write('a')
         file1.close()
+        file2 = open("%s/2011/04/01/02.png" % path, "w")
+        file2.write('a')
+        file2.close()
 
-        images = utilities.list_images(2011, 4, 1)
+        images = utilities.list_images(path, url, 2011, 4, 1)
         print images
         assert "%s/2011/04/01/01.jpg" % url in images
+        assert "%s/2011/04/01/02.png" % url in images
+
+        images = utilities.list_images(path, url, 2011, 4, 1, 1)
+        assert "%s/2011/04/01/01.jpg" % url in images
+        assert "%s/2011/04/01/02.png" % url not in images
 
     def test_index_loads(self):
         rv = self.app.get("/")
@@ -190,6 +215,27 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "/2011/04/01/31.jpg" not in rv.data
         assert "/2011/04/01/blah.jpg" not in rv.data
         assert "/2011/04/01/blah.txt" not in rv.data
+
+    def test_hour_page(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        os.mkdir("%s/2011" % path)
+        os.mkdir("%s/2011/04" % path)
+        os.mkdir("%s/2011/04/01" % path)
+        file1 = open("%s/2011/04/01/01.jpg" % path, "w")
+        file1.write('a')
+        file1.close()
+        file2 = open("%s/2011/04/01/02.png" % path, "w")
+        file2.write('a')
+        file2.close()
+
+        rv = self.app.get("/2011/04/01/01/")
+        assert "/2011/04/01/01.jpg" in rv.data
+        assert "/2011/04/01/02.png" not in rv.data
+
+        rv = self.app.get("/2011/04/01/02/")
+        assert "/2011/04/01/02.png" in rv.data
+        assert "/2011/04/01/01.png" not in rv.data
 
 
 if __name__ == '__main__':

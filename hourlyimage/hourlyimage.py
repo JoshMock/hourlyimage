@@ -12,7 +12,7 @@ def index():
     """
         Display available years.
     """
-    years = list_directories()
+    years = list_directories(app.config["IMAGE_LOCATION_DIR"])
     return render_template("home.html", years=years)
 
 @app.route("/<year>/")
@@ -20,7 +20,7 @@ def year(year):
     """
         Display available months in selected year.
     """
-    months = list_directories(year=year)
+    months = list_directories(app.config["IMAGE_LOCATION_DIR"], year=year)
     kwargs = {
         "year": year,
         "months": months,
@@ -32,7 +32,8 @@ def month(year, month):
     """
         Display available days in selected month.
     """
-    days = list_directories(year=year, month=month)
+    days = list_directories(app.config["IMAGE_LOCATION_DIR"], year=year,
+            month=month)
     kwargs = {
         "year": year,
         "month": month,
@@ -45,8 +46,9 @@ def day(year, month, day):
     """
         Display available images in selected day.
     """
-    path = "%s/%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year, month, day)
-    images = list_images(year, month, day)
+    path = app.config["IMAGE_LOCATION_DIR"]
+    url = app.config["IMAGE_LOCATION_URL"]
+    images = list_images(path, url, year, month, day)
     kwargs = {
         "year": year,
         "month": month,
@@ -55,6 +57,22 @@ def day(year, month, day):
     }
     return render_template("day.html", **kwargs)
 
+@app.route("/<year>/<month>/<day>/<hour>/")
+def hour(year, month, day, hour):
+    """
+        Display image for selected hour if it exists.
+    """
+    path = app.config["IMAGE_LOCATION_DIR"]
+    url = app.config["IMAGE_LOCATION_URL"]
+    images = list_images(path, url, year, month, day, hour=hour)
+    kwargs = {
+        "year": year,
+        "month": month,
+        "day": day,
+        "hour": hour,
+        "images": images,
+    }
+    return render_template("hour.html", **kwargs)
 
 if __name__ == "__main__":
     app.config["DEBUG"] = True # TODO: remove
