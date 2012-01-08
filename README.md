@@ -54,9 +54,7 @@ TODO: Finish this.
 
 TODOs
 -----
- * Set up unit test functionality, continue with new features using test-driven development.
- * Validate directory and file names to ensure they match possible dates.
- * Validate file names to make sure they are images.
+ * Single hour/image view
  * Recursively exclude links to any years that have no months, months that have no days, days that have no images.
  * Create config for timezone and apply to all date rules.
  * Provide date/time offset config option (if you want things to show up 24 hours after actual time, 1 hour after actual time, etc.)
