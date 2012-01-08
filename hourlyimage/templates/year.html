@@ -1,0 +1,10 @@
+<h1>Available months</h1>
+{% if months %}
+    <ol>
+    {% for month in months|sort %}
+        <li><a href="{{ url_for('month', year=year, month=month) }}">{{ month }}</a></li>
+    {% endfor %}
+    </ol>
+{% else %}
+    No months found.
+{% endif %}

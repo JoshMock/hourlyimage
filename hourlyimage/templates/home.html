@@ -1,0 +1,10 @@
+<h1>Available years</h1>
+{% if years %}
+    <ol>
+    {% for year in years|sort %}
+        <li><a href="{{ url_for('year', year=year) }}">{{ year }}</a></li>
+    {% endfor %}
+    </ol>
+{% else %}
+    No years found.
+{% endif %}
