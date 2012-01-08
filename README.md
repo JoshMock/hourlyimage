@@ -56,6 +56,7 @@ TODOs
 -----
  * Single hour/image view
  * Recursively exclude links to any years that have no months, months that have no days, days that have no images.
+ * 404 on pages that don't exist.
  * Create config for timezone and apply to all date rules.
  * Provide date/time offset config option (if you want things to show up 24 hours after actual time, 1 hour after actual time, etc.)
  * Complete templating in standards-compliant HTML5.
@@ -66,3 +67,4 @@ TODOs
  * "Latest image" view.
  * "Today" view.
  * Pretty 404 and 500 error pages
+ * What to do if 01.jpg, 01.png, 01.gif, etc. all exist?
