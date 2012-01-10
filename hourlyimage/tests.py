@@ -212,9 +212,12 @@ class HourlyImageTestCase(unittest.TestCase):
 
         rv = self.app.get("/2011/04/01/")
         assert "/2011/04/01/01.jpg" in rv.data
+        assert "/2011/04/01/01/" in rv.data
         assert "/2011/04/01/31.jpg" not in rv.data
+        assert "/2011/04/01/31/" not in rv.data
         assert "/2011/04/01/blah.jpg" not in rv.data
         assert "/2011/04/01/blah.txt" not in rv.data
+        assert "/2011/04/01/blah/" not in rv.data
 
     def test_hour_page(self):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
