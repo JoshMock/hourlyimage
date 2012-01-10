@@ -2,7 +2,11 @@
 {% if images %}
     <ol>
     {% for image in images|sort %}
-        <li><img src="{{ image }}" alt="" /></li>
+        <li>
+            <a href="{{ url_for('hour', year=year, month=month, day=day, hour=image.hour) }}">
+                <img src="{{ image.url }}" alt="" />
+            </a>
+        </li>
     {% endfor %}
     </ol>
 {% else %}

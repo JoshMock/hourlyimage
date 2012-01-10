@@ -48,7 +48,16 @@ def day(year, month, day):
     """
     path = app.config["IMAGE_LOCATION_DIR"]
     url = app.config["IMAGE_LOCATION_URL"]
-    images = list_images(path, url, year, month, day)
+    image_files = list_images(path, url, year, month, day)
+
+    images = []
+    for image in image_files:
+        images.append({
+            "url": image,
+            "hour": os.path.splitext(os.path.split(image)[1])[0],
+            "hour_name": None,
+        })
+
     kwargs = {
         "year": year,
         "month": month,

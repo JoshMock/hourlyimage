@@ -54,7 +54,7 @@ TODO: Finish this.
 
 TODOs
 -----
- * Single hour/image view
+ * Separate user templating from Flask project folder.
  * Recursively exclude links to any years that have no months, months that have no days, days that have no images.
  * 404 on pages that don't exist.
  * Create config for timezone and apply to all date rules.
