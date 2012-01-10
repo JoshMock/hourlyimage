@@ -1,127 +1,95 @@
 import datetime
 import os
+import re
 
 from datetime import datetime as createdatetime
 
-def list_directories(path, year=None, month=None):
+def generate_tree(path):
     """
-        Lists all directories in configured IMAGE_LOCATION_DIR path. If the
-        `year` or `year` and `month` arguments are provided, it only returns
-        directories that correspond to valid dates.  Raises a ValueError
-        exception if `month` is provided but `year` is not.
+        Recurses down a path, returning all valid directories and files inside
+        that path.
     """
-    if month and not year:
-        raise ValueError("'year' argument not provided")
-
-    if year:
-        try:
-            year = int(year)
-        except:
-            raise ValueError("'year' is not a valid year")
-        if year < datetime.MINYEAR or year > datetime.MAXYEAR:
-            raise ValueError("'year' is not a valid year")
-
-        if month:
-            try:
-                intmonth = int(month)
-            except:
-                raise ValueError("'month' is not a valid month")
-            if intmonth < 1 or intmonth > 12:
-                raise ValueError("'month' is not a valid month")
-
-            path = "%s/%s/%s" % (path, year, month)
-        else:
-            path = "%s/%s" % (path, year)
-
+    tree = {}
     dir_items = os.listdir(path)
-    dirs = []
     for item in dir_items:
-        if os.path.isdir("%s/%s" % (path, item)):
-            # test if directory accurately portrays a date or part of a date
+        new_path = "%s/%s" % (path, item)
+        if os.path.isdir(new_path) and is_valid_dir(new_path):
+            sub = generate_tree(new_path)
+            if sub:
+                tree[item] = sub
+        elif os.path.isfile(new_path) and is_valid_file(new_path):
+            tree[os.path.splitext(item)[0]] = new_path
+        else:
+            continue
+    return tree
+
+def is_valid_dir(path):
+    """
+        Tests whether a provided path belongs to the date-based directory
+        scheme.
+    """
+    year = 1
+    month = 1
+    day = 1
+
+    day_match = re.match(r'.*?/([0-9]{1,4})/([0-9]{2,2})/([0-9]{2,2})$', path)
+    if day_match:
+        try:
+            year = int(day_match.group(1))
+            month = int(day_match.group(2))
+            day = int(day_match.group(2))
+        except:
+            return False
+    else:
+        month_match = re.match(r'.*?\/([0-9]{1,4})/([0-9]{2,2})$', path)
+        if month_match:
             try:
-                intitem = int(item)
-            except ValueError:
-                continue
-            if year:
-                if month:
-                    try:
-                        createdatetime(year, intmonth, intitem)
-                    except ValueError:
-                        continue
-                else:
-                    try:
-                        createdatetime(year, intitem, 1)
-                    except ValueError:
-                        continue
+                year = int(month_match.group(1))
+                month = int(month_match.group(2))
+            except:
+                return False
+        else:
+            year_match = re.match(r'.*?\/([0-9]{1,4})$', path)
+            if year_match:
+                try:
+                    year = int(year_match.group(1))
+                except:
+                    return False
+            else:
+                return False
 
-            dirs.append(item)
+    # test if it corresponds with an actual date/time
+    try:
+        createdatetime(year, month, day)
+    except:
+        return False
 
-    return dirs
+    return True
 
-def list_images(path, url, year, month, day, hour=None):
+def is_valid_file(path):
     """
-        Takes a path, year, month and day and lists all available images
-        matching the file naming convention for that dated directory. Only
-        returns results for a set of arguments that correspond to a valid date.
+        Tests whether a provided file path fits in the date-based
+        directory scheme and is a valid image file.
     """
-    # test all params to ensure valid date
-    try:
-        year = int(year)
-    except:
-        raise ValueError("'year' is not a valid ")
-    try:
-        intmonth = int(month)
-    except:
-        raise ValueError("'month' is not a valid month")
-    try:
-        intday = int(day)
-    except:
-        raise ValueError("'day' is not a valid day")
-    if hour:
-        try:
-            inthour = int(hour)
-        except:
-            raise ValueError("'hour' is not a valid hour")
-        try:
-            createdatetime(year, intmonth, intday, inthour)
-        except:
-            raise ValueError("Parameters do not correspond to a real date.")
-    else:
-        try:
-            createdatetime(year, intmonth, intday)
-        except:
-            raise ValueError("Parameters do not correspond to a real date.")
-
-    # ensure parameters will map to directories with leading zero for <10
-    if isinstance(month, int):
-        month = "0%s" % month if month < 10 else str(month)
-    if isinstance(day, int):
-        day = "0%s" % day if day < 10 else str(day)
-    if hour and isinstance(hour, int):
-        hour = "0%s" % hour if hour < 10 else str(hour)
-
     acceptable_exts = [".jpg", ".jpeg", ".gif", ".png", ".tiff", ".bmp"]
+    if os.path.splitext(path)[1] not in acceptable_exts:
+        return False
 
-    if hour:
-        acceptable_names = [hour]
+    file_match = re.match(r'.*?/([0-9]{1,4})/([0-9]{2,2})/([0-9]{2,2})/([0-9]{2,2})\.[a-zA-Z]+$', path)
+    if file_match:
+        try:
+            year = int(file_match.group(1))
+            month = int(file_match.group(2))
+            day = int(file_match.group(3))
+            hour = int(file_match.group(4))
+        except:
+            return False
+
+        try:
+            createdatetime(year, month, day, hour)
+        except:
+            return False
+
+        return True
     else:
-        acceptable_names = ["00", "01", "02", "03", "04", "05", "06", "07", "08",
-                "09", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
-                "20", "21", "22", "23"]
-
-    path = "%s/%s/%s/%s" % (path, year, month, day)
-    url = "%s/%s/%s/%s" % (url, year, month, day)
-
-    items = os.listdir(path)
-    images = []
-    for item in items:
-        ext = os.path.splitext(item)[1]
-        name = item.replace(ext, '')
-        fullpath = "%s/%s" % (path, item)
-        fullurl = "%s/%s" % (url, item)
-        if os.path.isfile(fullpath) \
-                and ext in acceptable_exts \
-                and name in acceptable_names:
-            images.append(fullurl)
-
-    return images
+        return False

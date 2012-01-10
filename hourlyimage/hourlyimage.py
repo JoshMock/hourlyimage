@@ -1,6 +1,6 @@
 import os
 from flask import Flask, render_template
-from utilities import list_directories, list_images
+from utilities import generate_tree
 
 
 app = Flask(__name__)
@@ -12,18 +12,18 @@ def index():
     """
         Display available years.
     """
-    years = list_directories(app.config["IMAGE_LOCATION_DIR"])
-    return render_template("home.html", years=years)
+    tree = generate_tree(app.config["IMAGE_LOCATION_DIR"])
+    return render_template("home.html", years=tree.keys())
 
 @app.route("/<year>/")
 def year(year):
     """
         Display available months in selected year.
     """
-    months = list_directories(app.config["IMAGE_LOCATION_DIR"], year=year)
+    tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year))
     kwargs = {
         "year": year,
-        "months": months,
+        "months": tree.keys(),
     }
     return render_template("year.html", **kwargs)
 
@@ -32,12 +32,12 @@ def month(year, month):
     """
         Display available days in selected month.
     """
-    days = list_directories(app.config["IMAGE_LOCATION_DIR"], year=year,
-            month=month)
+    tree = generate_tree("%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year,
+            month))
     kwargs = {
         "year": year,
         "month": month,
-        "days": days,
+        "days": tree.keys(),
     }
     return render_template("month.html", **kwargs)
 
@@ -46,16 +46,16 @@ def day(year, month, day):
     """
         Display available images in selected day.
     """
-    path = app.config["IMAGE_LOCATION_DIR"]
-    url = app.config["IMAGE_LOCATION_URL"]
-    image_files = list_images(path, url, year, month, day)
+    image_files = generate_tree("%s/%s/%s/%s" % (
+            app.config["IMAGE_LOCATION_DIR"], year, month, day))
 
     images = []
-    for image in image_files:
+    for hour, image in image_files.iteritems():
         images.append({
-            "url": image,
-            "hour": os.path.splitext(os.path.split(image)[1])[0],
-            "hour_name": None,
+            "url": image.replace(app.config["IMAGE_LOCATION_DIR"],
+                    app.config["IMAGE_LOCATION_URL"]),
+            "hour": hour,
+            "hour_name": "",
         })
 
     kwargs = {
@@ -71,15 +71,15 @@ def hour(year, month, day, hour):
     """
         Display image for selected hour if it exists.
     """
-    path = app.config["IMAGE_LOCATION_DIR"]
-    url = app.config["IMAGE_LOCATION_URL"]
-    images = list_images(path, url, year, month, day, hour=hour)
+    image_files = generate_tree("%s/%s/%s/%s" % (
+            app.config["IMAGE_LOCATION_DIR"], year, month, day))
+
     kwargs = {
         "year": year,
         "month": month,
         "day": day,
         "hour": hour,
-        "images": images,
+        "image": image_files[hour],
     }
     return render_template("hour.html", **kwargs)
 

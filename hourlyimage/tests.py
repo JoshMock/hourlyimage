@@ -27,118 +27,6 @@ class HourlyImageTestCase(unittest.TestCase):
                 ignore_errors=True)
         os.unlink("static/zzz_test_images")
 
-    def test_list_directories_valueerror(self):
-        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
-        try:
-            utilities.list_directories(path, month="01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_directories(path, year="blah", month="01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_directories(path, year="-1", month="01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_directories(path, year="10000", month="01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_directories(path, year="2012", month="blah")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_directories(path, year="2012", month="-1")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_directories(path, year="2012", month="13")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-    def test_list_images_valueerror(self):
-        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
-        url = hourlyimage.app.config["IMAGE_LOCATION_URL"]
-
-        try:
-            utilities.list_images(path, url, "blah", "01", "01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-        try:
-            utilities.list_images(path, url, "-1", "01", "01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-        try:
-            utilities.list_images(path, url, "100000", "01", "01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_images(path, url, "2012", "blah", "01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-        try:
-            utilities.list_images(path, url, "2012", "-1", "01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-        try:
-            utilities.list_images(path, url, "2012", "13", "01")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_images(path, url, "2011", "02", "blah")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-        try:
-            utilities.list_images(path, url, "2011", "02", "29")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-        try:
-            utilities.list_images(path, url, "2011", "02", "01", "blah")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-        try:
-            utilities.list_images(path, url, "2011", "02", "01", "-1")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-        try:
-            utilities.list_images(path, url, "2011", "02", "01", "25")
-        except Exception, e:
-            assert isinstance(e, ValueError)
-
-    def test_list_images_use_int(self):
-        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
-        url = hourlyimage.app.config["IMAGE_LOCATION_URL"]
-
-        os.mkdir("%s/2011" % path)
-        os.mkdir("%s/2011/04" % path)
-        os.mkdir("%s/2011/04/01" % path)
-        file1 = open("%s/2011/04/01/01.jpg" % path, "w")
-        file1.write('a')
-        file1.close()
-        file2 = open("%s/2011/04/01/02.png" % path, "w")
-        file2.write('a')
-        file2.close()
-
-        images = utilities.list_images(path, url, 2011, 4, 1)
-        print images
-        assert "%s/2011/04/01/01.jpg" % url in images
-        assert "%s/2011/04/01/02.png" % url in images
-
-        images = utilities.list_images(path, url, 2011, 4, 1, 1)
-        assert "%s/2011/04/01/01.jpg" % url in images
-        assert "%s/2011/04/01/02.png" % url not in images
-
     def test_index_loads(self):
         rv = self.app.get("/")
         assert len(rv.data) > 0
@@ -147,12 +35,17 @@ class HourlyImageTestCase(unittest.TestCase):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
 
         os.mkdir("%s/2011" % path)
+        os.mkdir("%s/2011/01" % path)
+        os.mkdir("%s/2011/01/01" % path)
+        file1 = open("%s/2011/01/01/01.jpg" % path, "w")
+        file1.write('a')
+        file1.close()
         os.mkdir("%s/2012" % path)
         os.mkdir("%s/blah" % path)
 
         rv = self.app.get("/")
         assert "/2011/" in rv.data
-        assert "/2012/" in rv.data
+        assert "/2012/" not in rv.data
         assert "/blah/" not in rv.data
 
     def test_years_page_displays_months_accurately(self):
@@ -160,13 +53,17 @@ class HourlyImageTestCase(unittest.TestCase):
 
         os.mkdir("%s/2011" % path)
         os.mkdir("%s/2011/10" % path)
+        os.mkdir("%s/2011/10/01" % path)
+        file1 = open("%s/2011/10/01/01.jpg" % path, "w")
+        file1.write('a')
+        file1.close()
         os.mkdir("%s/2011/12" % path)
         os.mkdir("%s/2011/13" % path)
         os.mkdir("%s/2011/blah" % path)
 
         rv = self.app.get("/2011/")
         assert "/2011/10/" in rv.data
-        assert "/2011/12/" in rv.data
+        assert "/2011/12/" not in rv.data
         assert "/2011/13/" not in rv.data
         assert "/2011/blah/" not in rv.data
 
@@ -182,9 +79,12 @@ class HourlyImageTestCase(unittest.TestCase):
         os.mkdir("%s/2012" % path)
         os.mkdir("%s/2012/02" % path)
         os.mkdir("%s/2012/02/29" % path)
+        file1 = open("%s/2012/02/29/01.jpg" % path, "w")
+        file1.write('a')
+        file1.close()
 
         rv = self.app.get("/2011/02/")
-        assert "/2011/02/12/" in rv.data
+        assert "/2011/02/12/" not in rv.data
         assert "/2011/02/29/" not in rv.data
         assert "/2011/02/30/" not in rv.data
         assert "/2011/02/blah/" not in rv.data
@@ -239,6 +139,24 @@ class HourlyImageTestCase(unittest.TestCase):
         rv = self.app.get("/2011/04/01/02/")
         assert "/2011/04/01/02.png" in rv.data
         assert "/2011/04/01/01.png" not in rv.data
+
+    def test_recursively_hidden_empty_directories(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        os.mkdir("%s/1999" % path)
+        os.mkdir("%s/1999/09" % path)
+        os.mkdir("%s/1999/09/09" % path)
+        rv = self.app.get("/")
+        assert "1999" not in rv.data
+
+        os.mkdir("%s/1998" % path)
+        os.mkdir("%s/1998/09" % path)
+        rv = self.app.get("/")
+        assert "1998" not in rv.data
+
+        os.mkdir("%s/1997" % path)
+        rv = self.app.get("/")
+        assert "1997" not in rv.data
 
 
 if __name__ == '__main__':
