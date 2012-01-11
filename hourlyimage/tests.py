@@ -3,6 +3,8 @@ import shutil
 import unittest
 import tempfile
 import datetime
+from pytz import timezone
+import pytz
 
 import hourlyimage
 import utilities
@@ -187,7 +189,7 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "1997" not in rv.data
 
     def test_hide_future_datetimes(self):
-        current_time = datetime.datetime.now()
+        current_time = datetime.datetime.utcnow()
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
 
         os.mkdir("%s/%s" % (path, str(current_time.year + 2)))
@@ -207,6 +209,46 @@ class HourlyImageTestCase(unittest.TestCase):
         file1.close()
         rv = self.app.get("/%s/01/01/01/" % str(current_time.year + 2))
         assert rv.status == "404 NOT FOUND"
+
+    def test_timezone_setting(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        eastern = timezone("US/Eastern")
+        amsterdam = timezone("Europe/Amsterdam")
+
+        utc_time = pytz.utc.localize(datetime.datetime.utcnow())
+        eastern_time = utc_time.astimezone(eastern)
+        amsterdam_time = utc_time.astimezone(amsterdam)
+
+        file_month = "0%s" % amsterdam_time.month if amsterdam_time.month < 10 else str(amsterdam_time.month)
+        file_day = "0%s" % amsterdam_time.day if amsterdam_time.day < 10 else str(amsterdam_time.day)
+        file_hour = "0%s" % amsterdam_time.hour if amsterdam_time.hour < 10 else str(amsterdam_time.hour)
+
+        os.mkdir("%s/%s" % (path, amsterdam_time.year))
+        os.mkdir("%s/%s/%s" % (path, amsterdam_time.year, file_month))
+        os.mkdir("%s/%s/%s/%s" % (path, amsterdam_time.year, file_month,
+                file_day))
+        file1 = open("%s/%s/%s/%s/%s.jpg" % (path, amsterdam_time.year,
+                file_month, file_day, file_hour), "w")
+        file1.write('a')
+        file1.close()
+
+        e_month = "0%s" % eastern_time.month if eastern_time.month < 10 else str(eastern_time.month)
+        e_day = "0%s" % eastern_time.day if eastern_time.day < 10 else str(eastern_time.day)
+        e_hour = "0%s" % eastern_time.hour if eastern_time.hour < 10 else str(eastern_time.hour)
+
+        hourlyimage.app.config["TIMEZONE"] = eastern
+        rv = self.app.get("/%s/%s/%s/%s/" % (eastern_time.year, e_month, e_day,
+                e_hour))
+        assert rv.status == "404 NOT FOUND"
+
+        hourlyimage.app.config["TIMEZONE"] = amsterdam
+        rv = self.app.get("/%s/%s/%s/%s/" % (amsterdam_time.year, file_month,
+                file_day, file_hour))
+        print "/%s/%s/%s/%s/" % (amsterdam_time.year, file_month, file_day,
+                file_hour)
+        print rv.status
+        assert rv.status == "200 OK"
 
 
 if __name__ == '__main__':

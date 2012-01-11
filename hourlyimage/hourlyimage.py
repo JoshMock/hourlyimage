@@ -1,18 +1,22 @@
 import os
 from flask import abort, Flask, render_template
 from utilities import generate_tree
+from pytz import timezone
+import pytz
 
 
 app = Flask(__name__)
 app.config["IMAGE_LOCATION_DIR"] = "/Users/joshmock/Documents/Code/hourlyimage_images" # TODO: change before release
 app.config["IMAGE_LOCATION_URL"] = "/static/images" # TODO: change before release
+app.config["TIMEZONE"] = pytz.utc
 
 @app.route("/")
 def index():
     """
         Display available years.
     """
-    tree = generate_tree(app.config["IMAGE_LOCATION_DIR"])
+    tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
+            app.config["TIMEZONE"])
     return render_template("home.html", years=tree.keys())
 
 @app.route("/<year>/")
@@ -21,7 +25,8 @@ def year(year):
         Display available months in selected year.
     """
     try:
-        tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year))
+        tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"],
+                year), app.config["TIMEZONE"])
     except OSError:
         abort(404)
     if not tree:
@@ -39,8 +44,8 @@ def month(year, month):
         Display available days in selected month.
     """
     try:
-        tree = generate_tree("%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year,
-                month))
+        tree = generate_tree("%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"],
+                year, month), app.config["TIMEZONE"])
     except OSError:
         abort(404)
     if not tree:
@@ -60,7 +65,8 @@ def day(year, month, day):
     """
     try:
         image_files = generate_tree("%s/%s/%s/%s" % (
-                app.config["IMAGE_LOCATION_DIR"], year, month, day))
+                app.config["IMAGE_LOCATION_DIR"], year, month, day),
+                app.config["TIMEZONE"])
     except OSError:
         abort(404)
     if not image_files:
@@ -90,7 +96,8 @@ def hour(year, month, day, hour):
     """
     try:
         image_files = generate_tree("%s/%s/%s/%s" % (
-                app.config["IMAGE_LOCATION_DIR"], year, month, day))
+                app.config["IMAGE_LOCATION_DIR"], year, month, day),
+                app.config["TIMEZONE"])
     except OSError:
         abort(404)
     if not image_files:

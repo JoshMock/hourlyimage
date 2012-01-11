@@ -1,10 +1,12 @@
 import datetime
 import os
 import re
+from pytz import timezone
+import pytz
 
 from datetime import datetime as createdatetime
 
-def generate_tree(path):
+def generate_tree(path, timezone):
     """
         Recurses down a path, returning all valid directories and files inside
         that path.
@@ -13,17 +15,17 @@ def generate_tree(path):
     dir_items = os.listdir(path)
     for item in dir_items:
         new_path = "%s/%s" % (path, item)
-        if os.path.isdir(new_path) and is_valid_dir(new_path):
-            sub = generate_tree(new_path)
+        if os.path.isdir(new_path) and is_valid_dir(new_path, timezone):
+            sub = generate_tree(new_path, timezone)
             if sub:
                 tree[item] = sub
-        elif os.path.isfile(new_path) and is_valid_file(new_path):
+        elif os.path.isfile(new_path) and is_valid_file(new_path, timezone):
             tree[os.path.splitext(item)[0]] = new_path
         else:
             continue
     return tree
 
-def is_valid_dir(path):
+def is_valid_dir(path, timezone):
     """
         Tests whether a provided path belongs to the date-based directory
         scheme.
@@ -60,17 +62,19 @@ def is_valid_dir(path):
 
     # test if it corresponds with an actual date/time
     try:
-        date = createdatetime(year, month, day)
+        local_dt = timezone.localize(createdatetime(year, month, day))
     except TypeError:
         return False
     except ValueError:
         return False
-    if date > datetime.datetime.now():
+    utc_time = pytz.utc.localize(datetime.datetime.utcnow())
+    tz_time = utc_time.astimezone(timezone)
+    if local_dt > tz_time:
         return False
 
     return True
 
-def is_valid_file(path):
+def is_valid_file(path, timezone):
     """
         Tests whether a provided file path fits in the date-based
         directory scheme and is a valid image file.
@@ -89,13 +93,16 @@ def is_valid_file(path):
         except ValueError:
             return False
 
+        # test if it corresponds with an actual date/time
         try:
-            date = createdatetime(year, month, day, hour)
+            local_dt = timezone.localize(createdatetime(year, month, day, hour))
         except TypeError:
             return False
         except ValueError:
             return False
-        if date > datetime.datetime.now():
+        utc_time = pytz.utc.localize(datetime.datetime.utcnow())
+        tz_time = utc_time.astimezone(timezone)
+        if local_dt > tz_time:
             return False
 
         return True
