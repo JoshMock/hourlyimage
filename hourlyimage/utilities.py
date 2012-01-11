@@ -38,7 +38,7 @@ def is_valid_dir(path):
             year = int(day_match.group(1))
             month = int(day_match.group(2))
             day = int(day_match.group(2))
-        except:
+        except ValueError:
             return False
     else:
         month_match = re.match(r'.*?\/([0-9]{1,4})/([0-9]{2,2})$', path)
@@ -46,22 +46,26 @@ def is_valid_dir(path):
             try:
                 year = int(month_match.group(1))
                 month = int(month_match.group(2))
-            except:
+            except ValueError:
                 return False
         else:
             year_match = re.match(r'.*?\/([0-9]{1,4})$', path)
             if year_match:
                 try:
                     year = int(year_match.group(1))
-                except:
+                except ValueError:
                     return False
             else:
                 return False
 
     # test if it corresponds with an actual date/time
     try:
-        createdatetime(year, month, day)
-    except:
+        date = createdatetime(year, month, day)
+    except TypeError:
+        return False
+    except ValueError:
+        return False
+    if date > datetime.datetime.now():
         return False
 
     return True
@@ -82,12 +86,16 @@ def is_valid_file(path):
             month = int(file_match.group(2))
             day = int(file_match.group(3))
             hour = int(file_match.group(4))
-        except:
+        except ValueError:
             return False
 
         try:
-            createdatetime(year, month, day, hour)
-        except:
+            date = createdatetime(year, month, day, hour)
+        except TypeError:
+            return False
+        except ValueError:
+            return False
+        if date > datetime.datetime.now():
             return False
 
         return True

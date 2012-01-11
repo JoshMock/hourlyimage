@@ -2,6 +2,7 @@ import os
 import shutil
 import unittest
 import tempfile
+import datetime
 
 import hourlyimage
 import utilities
@@ -83,10 +84,10 @@ class HourlyImageTestCase(unittest.TestCase):
         os.mkdir("%s/2011/02/29" % path)
         os.mkdir("%s/2011/02/30" % path)
         os.mkdir("%s/2011/02/blah" % path)
-        os.mkdir("%s/2012" % path)
-        os.mkdir("%s/2012/02" % path)
-        os.mkdir("%s/2012/02/29" % path)
-        file1 = open("%s/2012/02/29/01.jpg" % path, "w")
+        os.mkdir("%s/2008" % path)
+        os.mkdir("%s/2008/02" % path)
+        os.mkdir("%s/2008/02/29" % path)
+        file1 = open("%s/2008/02/29/01.jpg" % path, "w")
         file1.write('a')
         file1.close()
 
@@ -95,8 +96,8 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "/2011/02/29/" not in rv.data
         assert "/2011/02/30/" not in rv.data
         assert "/2011/02/blah/" not in rv.data
-        rv = self.app.get("/2012/02/")
-        assert "/2012/02/29/" in rv.data
+        rv = self.app.get("/2008/02/")
+        assert "/2008/02/29/" in rv.data
 
         rv = self.app.get("/2010/01/")
         assert rv.status == "404 NOT FOUND"
@@ -184,6 +185,28 @@ class HourlyImageTestCase(unittest.TestCase):
         os.mkdir("%s/1997" % path)
         rv = self.app.get("/")
         assert "1997" not in rv.data
+
+    def test_hide_future_datetimes(self):
+        current_time = datetime.datetime.now()
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        os.mkdir("%s/%s" % (path, str(current_time.year + 2)))
+        rv = self.app.get("/%s/" % str(current_time.year + 2))
+        assert rv.status == "404 NOT FOUND"
+
+        os.mkdir("%s/%s/01" % (path, str(current_time.year + 2)))
+        rv = self.app.get("/%s/01/" % str(current_time.year + 2))
+        assert rv.status == "404 NOT FOUND"
+
+        os.mkdir("%s/%s/01/01" % (path, str(current_time.year + 2)))
+        rv = self.app.get("/%s/01/01/" % str(current_time.year + 2))
+        assert rv.status == "404 NOT FOUND"
+
+        file1 = open("%s/%s/01/01/01.jpg" % (path, str(current_time.year + 2)), "w")
+        file1.write('a')
+        file1.close()
+        rv = self.app.get("/%s/01/01/01/" % str(current_time.year + 2))
+        assert rv.status == "404 NOT FOUND"
 
 
 if __name__ == '__main__':
