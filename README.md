@@ -55,7 +55,6 @@ TODO: Finish this.
 TODOs
 -----
  * Separate user templating from Flask project folder.
- * 404 on pages that don't exist.
  * Create config for timezone and apply to all date rules.
  * Provide date/time offset config option (if you want things to show up 24 hours after actual time, 1 hour after actual time, etc.)
  * Complete templating in standards-compliant HTML5.

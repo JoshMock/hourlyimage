@@ -67,6 +67,13 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "/2011/13/" not in rv.data
         assert "/2011/blah/" not in rv.data
 
+        rv = self.app.get("/2010/")
+        assert rv.status == "404 NOT FOUND"
+
+        os.mkdir("%s/2012" % path)
+        rv = self.app.get("/2012/")
+        assert rv.status == "404 NOT FOUND"
+
     def test_months_page_displays_days_accurately(self):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
 
@@ -90,6 +97,14 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "/2011/02/blah/" not in rv.data
         rv = self.app.get("/2012/02/")
         assert "/2012/02/29/" in rv.data
+
+        rv = self.app.get("/2010/01/")
+        assert rv.status == "404 NOT FOUND"
+
+        os.mkdir("%s/2009" % path)
+        os.mkdir("%s/2009/01" % path)
+        rv = self.app.get("/2009/01/")
+        assert rv.status == "404 NOT FOUND"
 
     def test_day_page_displays_images_accurately(self):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
@@ -119,6 +134,15 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "/2011/04/01/blah.txt" not in rv.data
         assert "/2011/04/01/blah/" not in rv.data
 
+        rv = self.app.get("/2010/01/01/")
+        assert rv.status == "404 NOT FOUND"
+
+        os.mkdir("%s/2009" % path)
+        os.mkdir("%s/2009/02" % path)
+        os.mkdir("%s/2009/02/01" % path)
+        rv = self.app.get("/2009/02/01/")
+        assert rv.status == "404 NOT FOUND"
+
     def test_hour_page(self):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
 
@@ -139,6 +163,9 @@ class HourlyImageTestCase(unittest.TestCase):
         rv = self.app.get("/2011/04/01/02/")
         assert "/2011/04/01/02.png" in rv.data
         assert "/2011/04/01/01.png" not in rv.data
+
+        rv = self.app.get("/2000/01/01/01/")
+        assert rv.status == "404 NOT FOUND"
 
     def test_recursively_hidden_empty_directories(self):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]

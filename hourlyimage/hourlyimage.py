@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template
+from flask import abort, Flask, render_template
 from utilities import generate_tree
 
 
@@ -20,7 +20,13 @@ def year(year):
     """
         Display available months in selected year.
     """
-    tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year))
+    try:
+        tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year))
+    except OSError:
+        abort(404)
+    if not tree:
+        abort(404)
+
     kwargs = {
         "year": year,
         "months": tree.keys(),
@@ -32,8 +38,14 @@ def month(year, month):
     """
         Display available days in selected month.
     """
-    tree = generate_tree("%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year,
-            month))
+    try:
+        tree = generate_tree("%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year,
+                month))
+    except OSError:
+        abort(404)
+    if not tree:
+        abort(404)
+
     kwargs = {
         "year": year,
         "month": month,
@@ -46,8 +58,13 @@ def day(year, month, day):
     """
         Display available images in selected day.
     """
-    image_files = generate_tree("%s/%s/%s/%s" % (
-            app.config["IMAGE_LOCATION_DIR"], year, month, day))
+    try:
+        image_files = generate_tree("%s/%s/%s/%s" % (
+                app.config["IMAGE_LOCATION_DIR"], year, month, day))
+    except OSError:
+        abort(404)
+    if not image_files:
+        abort(404)
 
     images = []
     for hour, image in image_files.iteritems():
@@ -71,8 +88,13 @@ def hour(year, month, day, hour):
     """
         Display image for selected hour if it exists.
     """
-    image_files = generate_tree("%s/%s/%s/%s" % (
-            app.config["IMAGE_LOCATION_DIR"], year, month, day))
+    try:
+        image_files = generate_tree("%s/%s/%s/%s" % (
+                app.config["IMAGE_LOCATION_DIR"], year, month, day))
+    except OSError:
+        abort(404)
+    if not image_files:
+        abort(404)
 
     kwargs = {
         "year": year,
