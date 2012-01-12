@@ -6,10 +6,14 @@ import pytz
 
 
 app = Flask(__name__)
-app.config["IMAGE_LOCATION_DIR"] = "/Users/joshmock/Documents/Code/hourlyimage_images" # TODO: change before release
-app.config["IMAGE_LOCATION_URL"] = "/static/images" # TODO: change before release
+
+# TODO: change before release
+app.config["IMAGE_LOCATION_DIR"] = \
+        "/Users/joshmock/Documents/Code/hourlyimage_images"
+app.config["IMAGE_LOCATION_URL"] = "/static/images"
 app.config["TIMEZONE"] = pytz.utc
 app.config["OFFSET_HOURS"] = 0
+
 
 @app.route("/")
 def index():
@@ -19,6 +23,7 @@ def index():
     tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
             app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
     return render_template("home.html", years=tree.keys())
+
 
 @app.route("/<year>/")
 def year(year):
@@ -39,6 +44,7 @@ def year(year):
     }
     return render_template("year.html", **kwargs)
 
+
 @app.route("/<year>/<month>/")
 def month(year, month):
     """
@@ -46,7 +52,8 @@ def month(year, month):
     """
     try:
         tree = generate_tree("%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"],
-                year, month), app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+                year, month), app.config["TIMEZONE"],
+                app.config["OFFSET_HOURS"])
     except OSError:
         abort(404)
     if not tree:
@@ -58,6 +65,7 @@ def month(year, month):
         "days": tree.keys(),
     }
     return render_template("month.html", **kwargs)
+
 
 @app.route("/<year>/<month>/<day>/")
 def day(year, month, day):
@@ -90,6 +98,7 @@ def day(year, month, day):
     }
     return render_template("day.html", **kwargs)
 
+
 @app.route("/<year>/<month>/<day>/<hour>/")
 def hour(year, month, day, hour):
     """
@@ -113,6 +122,7 @@ def hour(year, month, day, hour):
     }
     return render_template("hour.html", **kwargs)
 
+
 if __name__ == "__main__":
-    app.config["DEBUG"] = True # TODO: remove
+    app.config["DEBUG"] = True  # TODO: remove
     app.run()

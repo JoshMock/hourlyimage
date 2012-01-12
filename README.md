@@ -56,7 +56,6 @@ TODOs
 -----
  * Separate user templating from Flask project folder.
  * Complete templating in standards-compliant HTML5.
- * PEP8 ALL THE PYTHONS!
  * Ability to create static content pages (about, contact, etc.)
  * Make sure Flask routing lets user create directories and files of their own somewhere that they can link to.
  * RSS feeds.

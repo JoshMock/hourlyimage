@@ -9,6 +9,7 @@ from datetime import (
     timedelta
 )
 
+
 def generate_tree(path, timezone, offset_hours):
     """
         Recurses down a path, returning all valid directories and files inside
@@ -29,6 +30,7 @@ def generate_tree(path, timezone, offset_hours):
         else:
             continue
     return tree
+
 
 def is_valid_dir(path, timezone, offset_hours):
     """
@@ -79,6 +81,7 @@ def is_valid_dir(path, timezone, offset_hours):
 
     return True
 
+
 def is_valid_file(path, timezone, offset_hours):
     """
         Tests whether a provided file path fits in the date-based
@@ -88,7 +91,9 @@ def is_valid_file(path, timezone, offset_hours):
     if os.path.splitext(path)[1] not in acceptable_exts:
         return False
 
-    file_match = re.match(r'.*?/([0-9]{1,4})/([0-9]{2,2})/([0-9]{2,2})/([0-9]{2,2})\.[a-zA-Z]+$', path)
+    file_match = re.match(r'.*?/([0-9]{1,4})/([0-9]{2,2})/([0-9]{2,2})/' +\
+            r'([0-9]{2,2})\.[a-zA-Z]+$',
+            path)
     if file_match:
         try:
             year = int(file_match.group(1))
@@ -100,7 +105,8 @@ def is_valid_file(path, timezone, offset_hours):
 
         # test if it corresponds with an actual date/time
         try:
-            local_dt = timezone.localize(createdatetime(year, month, day, hour))
+            local_dt = timezone.localize(createdatetime(year, month, day,
+                    hour))
         except TypeError:
             return False
         except ValueError:

@@ -18,8 +18,11 @@ class HourlyImageTestCase(unittest.TestCase):
         # set up directories and symlink for images
         hourlyimage.app.config["IMAGE_LOCATION_DIR"] = tempfile.mkdtemp()
         os.symlink(hourlyimage.app.config["IMAGE_LOCATION_DIR"],
-                "static/zzz_test_images") # TODO: include path to this current Python file before "static/" so this file's code can be run from anywhere
-        hourlyimage.app.config["IMAGE_LOCATION_URL"] = "/static/zzz_test_images"
+                "static/zzz_test_images")
+                # TODO: include path to this current Python file before
+                # "static/" so this file's code can be run from anywhere
+        hourlyimage.app.config["IMAGE_LOCATION_URL"] = \
+                "/static/zzz_test_images"
 
         self.app = hourlyimage.app.test_client()
 
@@ -205,7 +208,8 @@ class HourlyImageTestCase(unittest.TestCase):
         rv = self.app.get("/%s/01/01/" % str(current_time.year + 2))
         assert rv.status == "404 NOT FOUND"
 
-        file1 = open("%s/%s/01/01/01.jpg" % (path, str(current_time.year + 2)), "w")
+        file1 = open("%s/%s/01/01/01.jpg" % (path, str(current_time.year + 2)),
+                "w")
         file1.write('a')
         file1.close()
         rv = self.app.get("/%s/01/01/01/" % str(current_time.year + 2))
@@ -222,9 +226,12 @@ class HourlyImageTestCase(unittest.TestCase):
         eastern_time = utc_time.astimezone(eastern)
         amsterdam_time = utc_time.astimezone(amsterdam)
 
-        file_month = "0%s" % amsterdam_time.month if amsterdam_time.month < 10 else str(amsterdam_time.month)
-        file_day = "0%s" % amsterdam_time.day if amsterdam_time.day < 10 else str(amsterdam_time.day)
-        file_hour = "0%s" % amsterdam_time.hour if amsterdam_time.hour < 10 else str(amsterdam_time.hour)
+        file_month = "0%s" % amsterdam_time.month if amsterdam_time.month < 10\
+                else str(amsterdam_time.month)
+        file_day = "0%s" % amsterdam_time.day if amsterdam_time.day < 10 else\
+                str(amsterdam_time.day)
+        file_hour = "0%s" % amsterdam_time.hour if amsterdam_time.hour < 10\
+                else str(amsterdam_time.hour)
 
         os.mkdir("%s/%s" % (path, amsterdam_time.year))
         os.mkdir("%s/%s/%s" % (path, amsterdam_time.year, file_month))
@@ -235,9 +242,12 @@ class HourlyImageTestCase(unittest.TestCase):
         file1.write('a')
         file1.close()
 
-        e_month = "0%s" % eastern_time.month if eastern_time.month < 10 else str(eastern_time.month)
-        e_day = "0%s" % eastern_time.day if eastern_time.day < 10 else str(eastern_time.day)
-        e_hour = "0%s" % eastern_time.hour if eastern_time.hour < 10 else str(eastern_time.hour)
+        e_month = "0%s" % eastern_time.month if eastern_time.month < 10 else\
+                str(eastern_time.month)
+        e_day = "0%s" % eastern_time.day if eastern_time.day < 10 else\
+                str(eastern_time.day)
+        e_hour = "0%s" % eastern_time.hour if eastern_time.hour < 10 else\
+                str(eastern_time.hour)
 
         hourlyimage.app.config["TIMEZONE"] = eastern
         rv = self.app.get("/%s/%s/%s/%s/" % (eastern_time.year, e_month, e_day,
@@ -257,28 +267,37 @@ class HourlyImageTestCase(unittest.TestCase):
         hourlyimage.app.config["OFFSET_HOURS"] = 2
 
         current_utc_time = pytz.utc.localize(datetime.datetime.utcnow())
-        current_tz_time = current_utc_time.astimezone(hourlyimage.app.config["TIMEZONE"])
+        current_tz_time = current_utc_time.astimezone(hourlyimage.app.\
+                config["TIMEZONE"])
 
         # create file for 3 hours into the future
         future_date = current_tz_time + timedelta(hours=3)
-        month = str(future_date.month) if future_date.month > 9 else "0%s" % future_date.month
-        day = str(future_date.day) if future_date.day > 9 else "0%s" % future_date.day
-        hour = str(future_date.hour) if future_date.hour > 9 else "0%s" % future_date.hour
+        month = str(future_date.month) if future_date.month > 9 else "0%s" %\
+                future_date.month
+        day = str(future_date.day) if future_date.day > 9 else "0%s" %\
+                future_date.day
+        hour = str(future_date.hour) if future_date.hour > 9 else "0%s" %\
+                future_date.hour
         os.mkdir("%s/%s" % (path, future_date.year))
         os.mkdir("%s/%s/%s" % (path, future_date.year, month))
         os.mkdir("%s/%s/%s/%s" % (path, future_date.year, month, day))
-        file1 = open("%s/%s/%s/%s/%s.jpg" % (path, future_date.year, month, day, hour), "w")
+        file1 = open("%s/%s/%s/%s/%s.jpg" % (path, future_date.year, month,
+                day, hour), "w")
         file1.write('a')
         file1.close()
         # get URL for 3 hours into the future (should be 404)
-        rv = self.app.get("/%s/%s/%s/%s/" % (future_date.year, month, day, hour))
+        rv = self.app.get("/%s/%s/%s/%s/" % (future_date.year, month, day,
+                hour))
         assert rv.status == "404 NOT FOUND"
 
         # create file for 3 hours in the past
         past_date = current_tz_time - timedelta(hours=3)
-        month = str(past_date.month) if past_date.month > 9 else "0%s" % past_date.month
-        day = str(past_date.day) if past_date.day > 9 else "0%s" % past_date.day
-        hour = str(past_date.hour) if past_date.hour > 9 else "0%s" % past_date.hour
+        month = str(past_date.month) if past_date.month > 9 else "0%s" %\
+                past_date.month
+        day = str(past_date.day) if past_date.day > 9 else "0%s" %\
+                past_date.day
+        hour = str(past_date.hour) if past_date.hour > 9 else "0%s" %\
+                past_date.hour
         try:
             os.mkdir("%s/%s" % (path, past_date.year))
         except OSError:
@@ -291,7 +310,8 @@ class HourlyImageTestCase(unittest.TestCase):
             os.mkdir("%s/%s/%s/%s" % (path, past_date.year, month, day))
         except OSError:
             pass
-        file2 = open("%s/%s/%s/%s/%s.jpg" % (path, past_date.year, month, day, hour), "w")
+        file2 = open("%s/%s/%s/%s/%s.jpg" % (path, past_date.year, month, day,
+                hour), "w")
         file2.write('a')
         file2.close()
         # get URL for 3 hours into the past (should be 200)
