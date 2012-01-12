@@ -55,7 +55,6 @@ TODO: Finish this.
 TODOs
 -----
  * Separate user templating from Flask project folder.
- * Provide date/time offset config option (if you want things to show up 24 hours after actual time, 1 hour after actual time, etc.)
  * Complete templating in standards-compliant HTML5.
  * PEP8 ALL THE PYTHONS!
  * Ability to create static content pages (about, contact, etc.)
@@ -65,3 +64,4 @@ TODOs
  * "Today" view.
  * Pretty 404 and 500 error pages
  * What to do if 01.jpg, 01.png, 01.gif, etc. all exist?
+ * Twitter tie-in (cron job?)

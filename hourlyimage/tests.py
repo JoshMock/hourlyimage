@@ -3,6 +3,7 @@ import shutil
 import unittest
 import tempfile
 import datetime
+from datetime import timedelta
 from pytz import timezone
 import pytz
 
@@ -211,6 +212,7 @@ class HourlyImageTestCase(unittest.TestCase):
         assert rv.status == "404 NOT FOUND"
 
     def test_timezone_setting(self):
+        hourlyimage.app.config["OFFSET_HOURS"] = 0
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
 
         eastern = timezone("US/Eastern")
@@ -248,6 +250,52 @@ class HourlyImageTestCase(unittest.TestCase):
         print "/%s/%s/%s/%s/" % (amsterdam_time.year, file_month, file_day,
                 file_hour)
         print rv.status
+        assert rv.status == "200 OK"
+
+    def test_offset_hours(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+        hourlyimage.app.config["OFFSET_HOURS"] = 2
+
+        current_utc_time = pytz.utc.localize(datetime.datetime.utcnow())
+        current_tz_time = current_utc_time.astimezone(hourlyimage.app.config["TIMEZONE"])
+
+        # create file for 3 hours into the future
+        future_date = current_tz_time + timedelta(hours=3)
+        month = str(future_date.month) if future_date.month > 9 else "0%s" % future_date.month
+        day = str(future_date.day) if future_date.day > 9 else "0%s" % future_date.day
+        hour = str(future_date.hour) if future_date.hour > 9 else "0%s" % future_date.hour
+        os.mkdir("%s/%s" % (path, future_date.year))
+        os.mkdir("%s/%s/%s" % (path, future_date.year, month))
+        os.mkdir("%s/%s/%s/%s" % (path, future_date.year, month, day))
+        file1 = open("%s/%s/%s/%s/%s.jpg" % (path, future_date.year, month, day, hour), "w")
+        file1.write('a')
+        file1.close()
+        # get URL for 3 hours into the future (should be 404)
+        rv = self.app.get("/%s/%s/%s/%s/" % (future_date.year, month, day, hour))
+        assert rv.status == "404 NOT FOUND"
+
+        # create file for 3 hours in the past
+        past_date = current_tz_time - timedelta(hours=3)
+        month = str(past_date.month) if past_date.month > 9 else "0%s" % past_date.month
+        day = str(past_date.day) if past_date.day > 9 else "0%s" % past_date.day
+        hour = str(past_date.hour) if past_date.hour > 9 else "0%s" % past_date.hour
+        try:
+            os.mkdir("%s/%s" % (path, past_date.year))
+        except OSError:
+            pass
+        try:
+            os.mkdir("%s/%s/%s" % (path, past_date.year, month))
+        except OSError:
+            pass
+        try:
+            os.mkdir("%s/%s/%s/%s" % (path, past_date.year, month, day))
+        except OSError:
+            pass
+        file2 = open("%s/%s/%s/%s/%s.jpg" % (path, past_date.year, month, day, hour), "w")
+        file2.write('a')
+        file2.close()
+        # get URL for 3 hours into the past (should be 200)
+        rv = self.app.get("/%s/%s/%s/%s/" % (past_date.year, month, day, hour))
         assert rv.status == "200 OK"
 
 

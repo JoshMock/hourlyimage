@@ -4,9 +4,12 @@ import re
 from pytz import timezone
 import pytz
 
-from datetime import datetime as createdatetime
+from datetime import (
+    datetime as createdatetime,
+    timedelta
+)
 
-def generate_tree(path, timezone):
+def generate_tree(path, timezone, offset_hours):
     """
         Recurses down a path, returning all valid directories and files inside
         that path.
@@ -15,17 +18,19 @@ def generate_tree(path, timezone):
     dir_items = os.listdir(path)
     for item in dir_items:
         new_path = "%s/%s" % (path, item)
-        if os.path.isdir(new_path) and is_valid_dir(new_path, timezone):
-            sub = generate_tree(new_path, timezone)
+        if os.path.isdir(new_path) and is_valid_dir(new_path, timezone,
+                    offset_hours):
+            sub = generate_tree(new_path, timezone, offset_hours)
             if sub:
                 tree[item] = sub
-        elif os.path.isfile(new_path) and is_valid_file(new_path, timezone):
+        elif os.path.isfile(new_path) and is_valid_file(new_path, timezone,
+                    offset_hours):
             tree[os.path.splitext(item)[0]] = new_path
         else:
             continue
     return tree
 
-def is_valid_dir(path, timezone):
+def is_valid_dir(path, timezone, offset_hours):
     """
         Tests whether a provided path belongs to the date-based directory
         scheme.
@@ -68,13 +73,13 @@ def is_valid_dir(path, timezone):
     except ValueError:
         return False
     utc_time = pytz.utc.localize(datetime.datetime.utcnow())
-    tz_time = utc_time.astimezone(timezone)
+    tz_time = utc_time.astimezone(timezone) - timedelta(hours=offset_hours)
     if local_dt > tz_time:
         return False
 
     return True
 
-def is_valid_file(path, timezone):
+def is_valid_file(path, timezone, offset_hours):
     """
         Tests whether a provided file path fits in the date-based
         directory scheme and is a valid image file.
@@ -101,7 +106,7 @@ def is_valid_file(path, timezone):
         except ValueError:
             return False
         utc_time = pytz.utc.localize(datetime.datetime.utcnow())
-        tz_time = utc_time.astimezone(timezone)
+        tz_time = utc_time.astimezone(timezone) - timedelta(hours=offset_hours)
         if local_dt > tz_time:
             return False
 
