@@ -54,13 +54,13 @@ TODO: Finish this.
 
 TODOs
 -----
+ * RSS feeds.
+ * Twitter tie-in (cron job?)
+ * Pretty 404 and 500 error pages
+ * Separate configuration from project
+ * "Latest image" view.
+ * "Today" view.
  * Separate user templating from Flask project folder.
  * Complete templating in standards-compliant HTML5.
  * Ability to create static content pages (about, contact, etc.)
  * Make sure Flask routing lets user create directories and files of their own somewhere that they can link to.
- * RSS feeds.
- * "Latest image" view.
- * "Today" view.
- * Pretty 404 and 500 error pages
- * What to do if 01.jpg, 01.png, 01.gif, etc. all exist?
- * Twitter tie-in (cron job?)
