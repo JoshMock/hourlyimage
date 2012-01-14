@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 import re
-from flask import abort, Flask, render_template
+from flask import abort, Flask, make_response, render_template
 from utilities import generate_tree
 from pytz import timezone
 import pytz
@@ -172,7 +172,9 @@ def rss_hourly():
         "pub_date": rss_data[0]["pub_date"],
         "link": "http://%s/" % app.config["SITE_DOMAIN"],
     }
-    return render_template("rss_hourly.xml", **kwargs)
+    response = make_response(render_template("rss_hourly.xml", **kwargs))
+    response.headers["Content-type"] = "application/xml"
+    return response
 
 
 if __name__ == "__main__":
