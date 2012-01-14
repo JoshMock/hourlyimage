@@ -138,7 +138,7 @@ def rss_hourly():
                 for hours, hour_file in day_data.iteritems():
                     rss_items.append(hour_file)
 
-    dir_re = re.compile(r'/([0-9]{1,5})/([0-9]{2,2})/([0-9]{2,2})/([0-9]{2,2})\.')
+    dir_re = re.compile(r'/([0-9]{1,4})/([0-9]{2,2})/([0-9]{2,2})/([0-9]{2,2})\.')
     rss_items = sorted(rss_items, reverse=True)[0:50]
     rss_data = []
     for item in rss_items:
@@ -173,6 +173,67 @@ def rss_hourly():
         "link": "http://%s/" % app.config["SITE_DOMAIN"],
     }
     response = make_response(render_template("rss_hourly.xml", **kwargs))
+    response.headers["Content-type"] = "application/xml"
+    return response
+
+
+@app.route("/feed/daily/")
+def rss_daily():
+    domain = app.config["SITE_DOMAIN"]
+    path = app.config["IMAGE_LOCATION_DIR"]
+    url = app.config["IMAGE_LOCATION_URL"]
+    tree = generate_tree(path, app.config["TIMEZONE"],
+            app.config["OFFSET_HOURS"])
+
+    rss_items= []
+    for years, year_data in tree.iteritems():
+        for months, month_data in year_data.iteritems():
+            for days, day_data in month_data.iteritems():
+                images = []
+                for hour, image_path in day_data.iteritems():
+                    image = {
+                        "path": "http://%s%s" % (domain,
+                            image_path.replace(path, url)),
+                        "name": "",
+                    }
+                    images.append(image)
+                images = sorted(images)
+                rss_items.append(images)
+    print rss_items
+
+    rss_items = sorted(rss_items, key=lambda day: day[0]["path"], reverse=True)
+
+    dir_re = re.compile(r'/([0-9]{1,4})/([0-9]{2,2})/([0-9]{2,2})/')
+    rss_data = []
+
+    for item in rss_items:
+        match = dir_re.search(item[0]["path"])
+        year = match.group(1),
+        month = match.group(2),
+        day = match.group(3),
+
+        year = year[0]
+        month = month[0]
+        day = day[0]
+
+        date = datetime(int(year), int(month), int(day))
+        date_name = date.strftime("%A, %B %d, %Y")
+        pub_date = date.strftime("%a, %d %b %Y, 00:00:00")
+
+        rss_data.append({
+            "images": item,
+            "url": "http://%s/%s/%s/%s/" % (app.config["SITE_DOMAIN"], year,
+                month, day),
+            "date_name": date_name,
+            "pub_date": pub_date,
+        })
+
+    kwargs = {
+        "rss": rss_data,
+        "pub_date": rss_data[0]["pub_date"],
+        "link": "http://%s/" % app.config["SITE_DOMAIN"],
+    }
+    response = make_response(render_template("rss_daily.xml", **kwargs))
     response.headers["Content-type"] = "application/xml"
     return response
 

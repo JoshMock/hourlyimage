@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <rss version="2.0">
     <channel>
-        <title>Hourly images</title>
-        <description>Hourly images</description>
+        <title>Hourly images (by hour)</title>
+        <description>Hourly images (by hour)</description>
         <link>{{ link }}</link>
         <lastBuildDate>{{ pub_date }}</lastBuildDate>
         <pubDate>{{ pub_date }}</pubDate>
         <ttl>60</ttl>
-
-
         {% for hour in rss %}
         <item>
             <title>{{ hour.date_name }}</title>
@@ -20,4 +18,3 @@
         {% endfor %}
     </channel>
 </rss>
-

@@ -336,10 +336,47 @@ class HourlyImageTestCase(unittest.TestCase):
         file3.close()
 
         rv = self.app.get("/feed/hourly/")
-        assert "/2010/01/01/01/" in rv.data
-        assert "/2010/01/01/02/" in rv.data
-        assert "/2010/01/01/03/" in rv.data
-        assert "/2010/01/01/04/" not in rv.data
+        assert "<link>http://example.com/2010/01/01/01/</link>" in rv.data
+        assert "<link>http://example.com/2010/01/01/01/</link>" in rv.data
+        assert "<link>http://example.com/2010/01/01/02/</link>" in rv.data
+        assert "<link>http://example.com/2010/01/01/03/</link>" in rv.data
+        assert "<link>http://example.com/2010/01/01/04/</link>" not in rv.data
+
+    def test_rss_daily(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        os.mkdir("%s/2010" % path)
+        os.mkdir("%s/2010/01" % path)
+        os.mkdir("%s/2010/01/01" % path)
+        file1 = open("%s/2010/01/01/01.jpg" % path, "w")
+        file1.write('a')
+        file1.close()
+        file2 = open("%s/2010/01/01/02.jpg" % path, "w")
+        file2.write('a')
+        file2.close()
+        file3 = open("%s/2010/01/01/03.jpg" % path, "w")
+        file3.write('a')
+        file3.close()
+        os.mkdir("%s/2010/01/02" % path)
+        file4 = open("%s/2010/01/02/01.jpg" % path, "w")
+        file4.write('a')
+        file4.close()
+        file5 = open("%s/2010/01/02/02.jpg" % path, "w")
+        file5.write('a')
+        file5.close()
+        file6 = open("%s/2010/01/02/03.jpg" % path, "w")
+        file6.write('a')
+        file6.close()
+
+        rv = self.app.get("/feed/daily/")
+        print rv.data
+        assert "<link>http://example.com/2010/01/01/</link>" in rv.data
+        assert "<img src=\"http://example.com%s/2010/01/01/01.jpg" % \
+                hourlyimage.app.config["IMAGE_LOCATION_URL"] in rv.data
+        assert "<link>http://example.com/2010/01/02/</link>" in rv.data
+        assert "<img src=\"http://example.com%s/2010/01/02/01.jpg" % \
+                hourlyimage.app.config["IMAGE_LOCATION_URL"] in rv.data
+        assert "<link>http://example.com/2010/01/04/</link>" not in rv.data
 
 
 if __name__ == '__main__':
