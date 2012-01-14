@@ -1,4 +1,6 @@
+from datetime import datetime
 import os
+import re
 from flask import abort, Flask, render_template
 from utilities import generate_tree
 from pytz import timezone
@@ -13,6 +15,7 @@ app.config["IMAGE_LOCATION_DIR"] = \
 app.config["IMAGE_LOCATION_URL"] = "/static/images"
 app.config["TIMEZONE"] = pytz.utc
 app.config["OFFSET_HOURS"] = 0
+app.config["SITE_DOMAIN"] = "example.com"
 
 
 @app.route("/")
@@ -121,6 +124,55 @@ def hour(year, month, day, hour):
         "image": image_files[hour],
     }
     return render_template("hour.html", **kwargs)
+
+
+@app.route("/feed/hourly/")
+def rss_hourly():
+    tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
+            app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+
+    rss_items= []
+    for years, year_data in tree.iteritems():
+        for months, month_data in year_data.iteritems():
+            for days, day_data in month_data.iteritems():
+                for hours, hour_file in day_data.iteritems():
+                    rss_items.append(hour_file)
+
+    dir_re = re.compile(r'/([0-9]{1,5})/([0-9]{2,2})/([0-9]{2,2})/([0-9]{2,2})\.')
+    rss_items = sorted(rss_items, reverse=True)[0:50]
+    rss_data = []
+    for item in rss_items:
+        match = dir_re.search(item)
+        year = match.group(1),
+        month = match.group(2),
+        day = match.group(3),
+        hr = match.group(4),
+
+        year = year[0]
+        month = month[0]
+        day = day[0]
+        hr = hr[0]
+
+        date = datetime(int(year), int(month), int(day), int(hr))
+        date_name = date.strftime("%A, %B %d, %Y, %I:00 %p")
+        pub_date = date.strftime("%a, %d %b %Y, %H:00:00")
+
+        rss_data.append({
+            "path": "http://%s%s" % (app.config["SITE_DOMAIN"],
+                item.replace(app.config["IMAGE_LOCATION_DIR"],
+                app.config["IMAGE_LOCATION_URL"])),
+            "url": "http://%s/%s/%s/%s/%s/" % (app.config["SITE_DOMAIN"], year,
+                month, day, hr),
+            "date_name": date_name,
+            "pub_date": pub_date,
+        })
+
+    kwargs = {
+        "rss": rss_data,
+        "pub_date": rss_data[0]["pub_date"],
+        "link": "http://%s/" % app.config["SITE_DOMAIN"],
+    }
+    return render_template("rss_hourly.xml", **kwargs)
 
 
 if __name__ == "__main__":

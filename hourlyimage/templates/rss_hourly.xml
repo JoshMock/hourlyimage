@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
+    <channel>
+        <title>Hourly images</title>
+        <description>Hourly images</description>
+        <link>{{ link }}</link>
+        <lastBuildDate>{{ pub_date }}</lastBuildDate>
+        <pubDate>{{ pub_date }}</pubDate>
+        <ttl>60</ttl>
+
+
+        {% for hour in rss %}
+        <item>
+            <title>{{ hour.date_name }}</title>
+            <description><img src="{{ hour.path }}" alt="{{ hour.date_name }}" /></description>
+            <link>{{ hour.url }}</link>
+            <guid>{{ hour.url }}</guid>
+            <pubDate>{{ hour.pub_date }}</pubDate>
+        </item>
+        {% endfor %}
+    </channel>
+</rss>
+

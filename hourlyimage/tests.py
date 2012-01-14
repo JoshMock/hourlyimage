@@ -314,9 +314,32 @@ class HourlyImageTestCase(unittest.TestCase):
                 hour), "w")
         file2.write('a')
         file2.close()
+
         # get URL for 3 hours into the past (should be 200)
         rv = self.app.get("/%s/%s/%s/%s/" % (past_date.year, month, day, hour))
         assert rv.status == "200 OK"
+
+    def test_rss_hourly(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        os.mkdir("%s/2010" % path)
+        os.mkdir("%s/2010/01" % path)
+        os.mkdir("%s/2010/01/01" % path)
+        file1 = open("%s/2010/01/01/01.jpg" % path, "w")
+        file1.write('a')
+        file1.close()
+        file2 = open("%s/2010/01/01/02.jpg" % path, "w")
+        file2.write('a')
+        file2.close()
+        file3 = open("%s/2010/01/01/03.jpg" % path, "w")
+        file3.write('a')
+        file3.close()
+
+        rv = self.app.get("/feed/hourly/")
+        assert "/2010/01/01/01/" in rv.data
+        assert "/2010/01/01/02/" in rv.data
+        assert "/2010/01/01/03/" in rv.data
+        assert "/2010/01/01/04/" not in rv.data
 
 
 if __name__ == '__main__':
