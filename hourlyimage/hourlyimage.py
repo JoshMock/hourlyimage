@@ -1,7 +1,7 @@
 from datetime import datetime
 import os
 import re
-from flask import abort, Flask, make_response, render_template
+from flask import abort, Flask, make_response, Markup, render_template
 from utilities import generate_tree
 from pytz import timezone
 import pytz
@@ -16,6 +16,7 @@ app.config["IMAGE_LOCATION_URL"] = "/static/images"
 app.config["TIMEZONE"] = pytz.utc
 app.config["OFFSET_HOURS"] = 0
 app.config["SITE_DOMAIN"] = "example.com"
+app.config["STATIC_PAGE_DIR"] = "/Users/joshmock/Documents/Code/hourlyimage_pages"
 
 
 @app.route("/")
@@ -28,7 +29,7 @@ def index():
     return render_template("home.html", years=tree.keys())
 
 
-@app.route("/<year>/")
+@app.route("/<int:year>/")
 def year(year):
     """
         Display available months in selected year.
@@ -46,6 +47,26 @@ def year(year):
         "months": tree.keys(),
     }
     return render_template("year.html", **kwargs)
+
+
+@app.route("/<page_name>")
+def static_pages(page_name):
+    statics = app.config["STATIC_PAGE_DIR"]
+
+    f = None
+    if os.path.exists("%s/%s.html" % (statics, page_name)):
+        f = open("%s/%s.html" % (statics, page_name))
+    elif os.path.exists("%s/%s.htm" % (statics, page_name)):
+        f = open("%s/%s.htm" % (statics, page_name))
+    else:
+        abort(404)
+    html = f.read()
+    f.close()
+
+    kwargs = {
+        "html": Markup(html),
+    }
+    return render_template("static_page.html", **kwargs)
 
 
 @app.route("/<year>/<month>/")
@@ -199,7 +220,6 @@ def rss_daily():
                     images.append(image)
                 images = sorted(images)
                 rss_items.append(images)
-    print rss_items
 
     rss_items = sorted(rss_items, key=lambda day: day[0]["path"], reverse=True)
 

@@ -19,10 +19,12 @@ class HourlyImageTestCase(unittest.TestCase):
         hourlyimage.app.config["IMAGE_LOCATION_DIR"] = tempfile.mkdtemp()
         os.symlink(hourlyimage.app.config["IMAGE_LOCATION_DIR"],
                 "static/zzz_test_images")
-                # TODO: include path to this current Python file before
-                # "static/" so this file's code can be run from anywhere
         hourlyimage.app.config["IMAGE_LOCATION_URL"] = \
                 "/static/zzz_test_images"
+
+        os.mkdir("%s/static_pages" % hourlyimage.app.config["IMAGE_LOCATION_DIR"])
+        hourlyimage.app.config["STATIC_PAGE_DIR"] = "%s/static_pages" % \
+                hourlyimage.app.config["IMAGE_LOCATION_DIR"]
 
         self.app = hourlyimage.app.test_client()
 
@@ -257,9 +259,6 @@ class HourlyImageTestCase(unittest.TestCase):
         hourlyimage.app.config["TIMEZONE"] = amsterdam
         rv = self.app.get("/%s/%s/%s/%s/" % (amsterdam_time.year, file_month,
                 file_day, file_hour))
-        print "/%s/%s/%s/%s/" % (amsterdam_time.year, file_month, file_day,
-                file_hour)
-        print rv.status
         assert rv.status == "200 OK"
 
     def test_offset_hours(self):
@@ -369,7 +368,6 @@ class HourlyImageTestCase(unittest.TestCase):
         file6.close()
 
         rv = self.app.get("/feed/daily/")
-        print rv.data
         assert "<link>http://example.com/2010/01/01/</link>" in rv.data
         assert "<img src=\"http://example.com%s/2010/01/01/01.jpg" % \
                 hourlyimage.app.config["IMAGE_LOCATION_URL"] in rv.data
@@ -377,6 +375,16 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "<img src=\"http://example.com%s/2010/01/02/01.jpg" % \
                 hourlyimage.app.config["IMAGE_LOCATION_URL"] in rv.data
         assert "<link>http://example.com/2010/01/04/</link>" not in rv.data
+
+    def test_static_pages(self):
+        statics_dir = hourlyimage.app.config["STATIC_PAGE_DIR"]
+        file1 = open("%s/about.html" % statics_dir, "w")
+        file1.write("<h1>About us</h1><p>Stuff!</p>")
+        file1.close()
+
+        rv = self.app.get("/about")
+        print rv.data
+        assert "<h1>About us</h1><p>Stuff!</p>" in rv.data
 
 
 if __name__ == '__main__':
