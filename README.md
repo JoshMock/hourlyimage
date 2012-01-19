@@ -38,12 +38,12 @@ For example, if in your settings, your base directory is `/myimages` and you wan
 
 This would create the following available pages on your site:
 
- * **A summary for 2011:** http://yoursite.com/2011/
- * **A summary for December of 2011:** http://yoursite.com/2011/12/
- * **All images for December 21, 2011:** http://yoursite.com/2011/12/21/
- * **The image for 1pm on December 21, 2011:** http://yoursite.com/2011/12/21/13/
- * **The image for 2pm on December 21, 2011:** http://yoursite.com/2011/12/21/14/
- * **The image for 3pm on December 21, 2011:** http://yoursite.com/2011/12/21/15/
+ * **A summary for 2011:** http://yoursite.com/images/2011/
+ * **A summary for December of 2011:** http://yoursite.com/images/2011/12/
+ * **All images for December 21, 2011:** http://yoursite.com/images/2011/12/21/
+ * **The image for 1pm on December 21, 2011:** http://yoursite.com/images/2011/12/21/13/
+ * **The image for 2pm on December 21, 2011:** http://yoursite.com/images/2011/12/21/14/
+ * **The image for 3pm on December 21, 2011:** http://yoursite.com/images/2011/12/21/15/
 
 It would also update the daily RSS feed, adding the new images to the December 21 entry, and the hourly RSS feed with 3 new entries, one for each hour.
 
