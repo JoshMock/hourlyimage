@@ -59,7 +59,6 @@ TODOs
  * Separate configuration from project
  * "Latest image" view.
  * "Today" view.
- * Separate user templating from Flask project folder.
  * Complete templating in standards-compliant HTML5.
- * Make sure Flask routing lets user create directories and files of their own somewhere that they can link to.
  * Daily RSS feed doesn't publish current day until it's over (keeping timezone and offset in mind)
+ * Add titles to images

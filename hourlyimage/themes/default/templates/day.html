@@ -1,6 +1,9 @@
+{% extends theme('_themes/default/layout.html') %}
+
+{% block main %}
 <h1>Available images</h1>
 {% if images %}
-    <ol>
+    <ol id="list-hours">
     {% for image in images|sort %}
         <li>
             <a href="{{ url_for('hour', year=year, month=month, day=day, hour=image.hour) }}">
@@ -12,3 +15,4 @@
 {% else %}
     No images found.
 {% endif %}
+{% endblock %}

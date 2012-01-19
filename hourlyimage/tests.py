@@ -53,9 +53,9 @@ class HourlyImageTestCase(unittest.TestCase):
         os.mkdir("%s/blah" % path)
 
         rv = self.app.get("/")
-        assert "/2011/" in rv.data
-        assert "/2012/" not in rv.data
-        assert "/blah/" not in rv.data
+        assert "/images/2011/" in rv.data
+        assert "/images/2012/" not in rv.data
+        assert "/images/blah/" not in rv.data
 
     def test_years_page_displays_months_accurately(self):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
@@ -70,17 +70,17 @@ class HourlyImageTestCase(unittest.TestCase):
         os.mkdir("%s/2011/13" % path)
         os.mkdir("%s/2011/blah" % path)
 
-        rv = self.app.get("/2011/")
+        rv = self.app.get("/images/2011/")
         assert "/2011/10/" in rv.data
         assert "/2011/12/" not in rv.data
         assert "/2011/13/" not in rv.data
         assert "/2011/blah/" not in rv.data
 
-        rv = self.app.get("/2010/")
+        rv = self.app.get("/images/2010/")
         assert rv.status == "404 NOT FOUND"
 
         os.mkdir("%s/2012" % path)
-        rv = self.app.get("/2012/")
+        rv = self.app.get("/images/2012/")
         assert rv.status == "404 NOT FOUND"
 
     def test_months_page_displays_days_accurately(self):
@@ -99,20 +99,20 @@ class HourlyImageTestCase(unittest.TestCase):
         file1.write('a')
         file1.close()
 
-        rv = self.app.get("/2011/02/")
+        rv = self.app.get("/images/2011/02/")
         assert "/2011/02/12/" not in rv.data
         assert "/2011/02/29/" not in rv.data
         assert "/2011/02/30/" not in rv.data
         assert "/2011/02/blah/" not in rv.data
-        rv = self.app.get("/2008/02/")
+        rv = self.app.get("/images/2008/02/")
         assert "/2008/02/29/" in rv.data
 
-        rv = self.app.get("/2010/01/")
+        rv = self.app.get("/images/2010/01/")
         assert rv.status == "404 NOT FOUND"
 
         os.mkdir("%s/2009" % path)
         os.mkdir("%s/2009/01" % path)
-        rv = self.app.get("/2009/01/")
+        rv = self.app.get("/images/2009/01/")
         assert rv.status == "404 NOT FOUND"
 
     def test_day_page_displays_images_accurately(self):
@@ -134,7 +134,7 @@ class HourlyImageTestCase(unittest.TestCase):
         file4.write('a')
         file4.close()
 
-        rv = self.app.get("/2011/04/01/")
+        rv = self.app.get("/images/2011/04/01/")
         assert "/2011/04/01/01.jpg" in rv.data
         assert "/2011/04/01/01/" in rv.data
         assert "/2011/04/01/31.jpg" not in rv.data
@@ -143,13 +143,13 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "/2011/04/01/blah.txt" not in rv.data
         assert "/2011/04/01/blah/" not in rv.data
 
-        rv = self.app.get("/2010/01/01/")
+        rv = self.app.get("/images/2010/01/01/")
         assert rv.status == "404 NOT FOUND"
 
         os.mkdir("%s/2009" % path)
         os.mkdir("%s/2009/02" % path)
         os.mkdir("%s/2009/02/01" % path)
-        rv = self.app.get("/2009/02/01/")
+        rv = self.app.get("/images/2009/02/01/")
         assert rv.status == "404 NOT FOUND"
 
     def test_hour_page(self):
@@ -165,15 +165,15 @@ class HourlyImageTestCase(unittest.TestCase):
         file2.write('a')
         file2.close()
 
-        rv = self.app.get("/2011/04/01/01/")
+        rv = self.app.get("/images/2011/04/01/01/")
         assert "/2011/04/01/01.jpg" in rv.data
         assert "/2011/04/01/02.png" not in rv.data
 
-        rv = self.app.get("/2011/04/01/02/")
+        rv = self.app.get("/images/2011/04/01/02/")
         assert "/2011/04/01/02.png" in rv.data
         assert "/2011/04/01/01.png" not in rv.data
 
-        rv = self.app.get("/2000/01/01/01/")
+        rv = self.app.get("/images/2000/01/01/01/")
         assert rv.status == "404 NOT FOUND"
 
     def test_recursively_hidden_empty_directories(self):
@@ -199,22 +199,22 @@ class HourlyImageTestCase(unittest.TestCase):
         path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
 
         os.mkdir("%s/%s" % (path, str(current_time.year + 2)))
-        rv = self.app.get("/%s/" % str(current_time.year + 2))
+        rv = self.app.get("/images/%s/" % str(current_time.year + 2))
         assert rv.status == "404 NOT FOUND"
 
         os.mkdir("%s/%s/01" % (path, str(current_time.year + 2)))
-        rv = self.app.get("/%s/01/" % str(current_time.year + 2))
+        rv = self.app.get("/images/%s/01/" % str(current_time.year + 2))
         assert rv.status == "404 NOT FOUND"
 
         os.mkdir("%s/%s/01/01" % (path, str(current_time.year + 2)))
-        rv = self.app.get("/%s/01/01/" % str(current_time.year + 2))
+        rv = self.app.get("/images/%s/01/01/" % str(current_time.year + 2))
         assert rv.status == "404 NOT FOUND"
 
         file1 = open("%s/%s/01/01/01.jpg" % (path, str(current_time.year + 2)),
                 "w")
         file1.write('a')
         file1.close()
-        rv = self.app.get("/%s/01/01/01/" % str(current_time.year + 2))
+        rv = self.app.get("/images/%s/01/01/01/" % str(current_time.year + 2))
         assert rv.status == "404 NOT FOUND"
 
     def test_timezone_setting(self):
@@ -252,12 +252,12 @@ class HourlyImageTestCase(unittest.TestCase):
                 str(eastern_time.hour)
 
         hourlyimage.app.config["TIMEZONE"] = eastern
-        rv = self.app.get("/%s/%s/%s/%s/" % (eastern_time.year, e_month, e_day,
+        rv = self.app.get("/images/%s/%s/%s/%s/" % (eastern_time.year, e_month, e_day,
                 e_hour))
         assert rv.status == "404 NOT FOUND"
 
         hourlyimage.app.config["TIMEZONE"] = amsterdam
-        rv = self.app.get("/%s/%s/%s/%s/" % (amsterdam_time.year, file_month,
+        rv = self.app.get("/images/%s/%s/%s/%s/" % (amsterdam_time.year, file_month,
                 file_day, file_hour))
         assert rv.status == "200 OK"
 
@@ -285,7 +285,7 @@ class HourlyImageTestCase(unittest.TestCase):
         file1.write('a')
         file1.close()
         # get URL for 3 hours into the future (should be 404)
-        rv = self.app.get("/%s/%s/%s/%s/" % (future_date.year, month, day,
+        rv = self.app.get("/images/%s/%s/%s/%s/" % (future_date.year, month, day,
                 hour))
         assert rv.status == "404 NOT FOUND"
 
@@ -315,7 +315,7 @@ class HourlyImageTestCase(unittest.TestCase):
         file2.close()
 
         # get URL for 3 hours into the past (should be 200)
-        rv = self.app.get("/%s/%s/%s/%s/" % (past_date.year, month, day, hour))
+        rv = self.app.get("/images/%s/%s/%s/%s/" % (past_date.year, month, day, hour))
         assert rv.status == "200 OK"
 
     def test_rss_hourly(self):
@@ -381,11 +381,18 @@ class HourlyImageTestCase(unittest.TestCase):
         file1 = open("%s/about.html" % statics_dir, "w")
         file1.write("<h1>About us</h1><p>Stuff!</p>")
         file1.close()
+        file1 = open("%s/contact.htm" % statics_dir, "w")
+        file1.write("<h1>Contact us!</h1><p>more stuff!</p>")
+        file1.close()
 
-        rv = self.app.get("/about")
-        print rv.data
+        rv = self.app.get("/content/about")
         assert "<h1>About us</h1><p>Stuff!</p>" in rv.data
 
+        rv = self.app.get("/content/contact")
+        assert "<h1>Contact us!</h1><p>more stuff!</p>" in rv.data
+
+        rv = self.app.get("/content/foo")
+        assert rv.status == "404 NOT FOUND"
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,6 +1,9 @@
+{% extends theme('_themes/default/layout.html') %}
+
+{% block main %}
 <h1>Available days</h1>
 {% if days %}
-    <ol>
+    <ol id="list-days">
     {% for day in days|sort %}
         <li><a href="{{ url_for('day', year=year, month=month, day=day) }}">{{ day }}</a></li>
     {% endfor %}
@@ -8,3 +11,4 @@
 {% else %}
     No days found.
 {% endif %}
+{% endblock %}

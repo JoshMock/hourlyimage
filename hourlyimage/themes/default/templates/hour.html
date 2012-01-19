@@ -1,8 +1,12 @@
+{% extends theme('_themes/default/layout.html') %}
+
+{% block main %}
 <h1>Available images</h1>
 {% if image %}
-    <ol>
+    <ol id="list-images">
         <li><img src="{{ image }}" alt="" /></li>
     </ol>
 {% else %}
     No image found.
 {% endif %}
+{% endblock %}

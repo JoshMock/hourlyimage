@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import re
 from flask import abort, Flask, make_response, Markup, render_template
+from flaskext.themes import render_theme_template, setup_themes
 from utilities import generate_tree
 from pytz import timezone
 import pytz
@@ -17,6 +18,9 @@ app.config["TIMEZONE"] = pytz.utc
 app.config["OFFSET_HOURS"] = 0
 app.config["SITE_DOMAIN"] = "example.com"
 app.config["STATIC_PAGE_DIR"] = "/Users/joshmock/Documents/Code/hourlyimage_pages"
+app.config["DEFAULT_THEME"] = "default"
+
+setup_themes(app, app_identifier="hourlyimage")
 
 
 @app.route("/")
@@ -26,30 +30,11 @@ def index():
     """
     tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
             app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
-    return render_template("home.html", years=tree.keys())
+    return render_theme_template(app.config["DEFAULT_THEME"], "home.html",
+            years=tree.keys())
 
 
-@app.route("/<int:year>/")
-def year(year):
-    """
-        Display available months in selected year.
-    """
-    try:
-        tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"],
-                year), app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
-    except OSError:
-        abort(404)
-    if not tree:
-        abort(404)
-
-    kwargs = {
-        "year": year,
-        "months": tree.keys(),
-    }
-    return render_template("year.html", **kwargs)
-
-
-@app.route("/<page_name>")
+@app.route("/content/<page_name>")
 def static_pages(page_name):
     statics = app.config["STATIC_PAGE_DIR"]
 
@@ -66,10 +51,32 @@ def static_pages(page_name):
     kwargs = {
         "html": Markup(html),
     }
-    return render_template("static_page.html", **kwargs)
+    return render_theme_template(app.config["DEFAULT_THEME"],
+            "static_page.html", **kwargs)
 
 
-@app.route("/<year>/<month>/")
+@app.route("/images/<int:year>/")
+def year(year):
+    """
+        Display available months in selected year.
+    """
+    try:
+        tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"],
+                year), app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    except OSError:
+        abort(404)
+    if not tree:
+        abort(404)
+
+    kwargs = {
+        "year": year,
+        "months": tree.keys(),
+    }
+    return render_theme_template(app.config["DEFAULT_THEME"], "year.html",
+            **kwargs)
+
+
+@app.route("/images/<year>/<month>/")
 def month(year, month):
     """
         Display available days in selected month.
@@ -88,10 +95,11 @@ def month(year, month):
         "month": month,
         "days": tree.keys(),
     }
-    return render_template("month.html", **kwargs)
+    return render_theme_template(app.config["DEFAULT_THEME"], "month.html",
+            **kwargs)
 
 
-@app.route("/<year>/<month>/<day>/")
+@app.route("/images/<year>/<month>/<day>/")
 def day(year, month, day):
     """
         Display available images in selected day.
@@ -120,10 +128,11 @@ def day(year, month, day):
         "day": day,
         "images": images,
     }
-    return render_template("day.html", **kwargs)
+    return render_theme_template(app.config["DEFAULT_THEME"], "day.html",
+            **kwargs)
 
 
-@app.route("/<year>/<month>/<day>/<hour>/")
+@app.route("/images/<year>/<month>/<day>/<hour>/")
 def hour(year, month, day, hour):
     """
         Display image for selected hour if it exists.
@@ -144,7 +153,8 @@ def hour(year, month, day, hour):
         "hour": hour,
         "image": image_files[hour],
     }
-    return render_template("hour.html", **kwargs)
+    return render_theme_template(app.config["DEFAULT_THEME"], "hour.html",
+            **kwargs)
 
 
 @app.route("/feed/hourly/")
