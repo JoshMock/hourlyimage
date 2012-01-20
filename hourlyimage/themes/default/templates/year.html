@@ -1,11 +1,13 @@
 {% extends theme('_themes/default/layout.html') %}
 
+{% block title %}{{ year }} | {% endblock %}
+
 {% block main %}
-<h1>Available months</h1>
+<h1>{{ year }}</h1>
 {% if months %}
     <ol id="list-months">
     {% for month in months|sort %}
-        <li><a href="{{ url_for('month', year=year, month=month) }}">{{ month }}</a></li>
+        <li><a href="{{ url_for('month', year=year, month=month.value) }}">{{ month.name }}</a></li>
     {% endfor %}
     </ol>
 {% else %}

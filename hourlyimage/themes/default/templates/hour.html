@@ -1,7 +1,9 @@
 {% extends theme('_themes/default/layout.html') %}
 
+{% block title %}{{ month.name }} {{ day }}, {{ year }}, {{ hour_name }} | {% endblock %}
+
 {% block main %}
-<h1>Available images</h1>
+<h1>{{ month.name }} {{ day }}, {{ year }}, {{ hour_name }}</h1>
 {% if image %}
     <ol id="list-images">
         <li><img src="{{ image }}" alt="" /></li>

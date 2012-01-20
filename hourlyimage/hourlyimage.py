@@ -68,9 +68,17 @@ def year(year):
     if not tree:
         abort(404)
 
+    months = tree.keys()
+    month_data = []
+    for month in months:
+        month_data.append({
+            "value": month,
+            "name": datetime(year, int(month), 1).strftime("%B"),
+        })
+
     kwargs = {
         "year": year,
-        "months": tree.keys(),
+        "months": month_data,
     }
     return render_theme_template(app.config["DEFAULT_THEME"], "year.html",
             **kwargs)
@@ -92,7 +100,10 @@ def month(year, month):
 
     kwargs = {
         "year": year,
-        "month": month,
+        "month": {
+            "value": month,
+            "name": datetime(int(year), int(month), 1).strftime("%B"),
+        },
         "days": tree.keys(),
     }
     return render_theme_template(app.config["DEFAULT_THEME"], "month.html",
@@ -119,12 +130,15 @@ def day(year, month, day):
             "url": image.replace(app.config["IMAGE_LOCATION_DIR"],
                     app.config["IMAGE_LOCATION_URL"]),
             "hour": hour,
-            "hour_name": "",
+            "hour_name": datetime(int(year), int(month), int(day), int(hour)).strftime("%I:00 %p"),
         })
 
     kwargs = {
         "year": year,
-        "month": month,
+        "month": {
+            "value": month,
+            "name": datetime(int(year), int(month), int(day)).strftime("%B")
+        },
         "day": day,
         "images": images,
     }
@@ -148,10 +162,14 @@ def hour(year, month, day, hour):
 
     kwargs = {
         "year": year,
-        "month": month,
+        "month": {
+            "value": month,
+            "name": datetime(int(year), int(month), int(day)).strftime("%B")
+        },
         "day": day,
         "hour": hour,
-        "image": image_files[hour],
+        "hour_name": datetime(int(year), int(month), int(day), int(hour)).strftime("%I:00 %p"),
+        "image": image_files[hour].replace(app.config["IMAGE_LOCATION_DIR"], app.config["IMAGE_LOCATION_URL"]),
     }
     return render_theme_template(app.config["DEFAULT_THEME"], "hour.html",
             **kwargs)

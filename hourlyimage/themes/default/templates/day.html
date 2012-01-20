@@ -1,14 +1,19 @@
 {% extends theme('_themes/default/layout.html') %}
 
+{% block title %}{{ month.name }} {{ day }}, {{ year }} | {% endblock %}
+
 {% block main %}
-<h1>Available images</h1>
+<h1>{{ month.name }} {{ day }}, {{ year }}</h1>
 {% if images %}
     <ol id="list-hours">
     {% for image in images|sort %}
         <li>
-            <a href="{{ url_for('hour', year=year, month=month, day=day, hour=image.hour) }}">
+            <a href="{{ url_for('hour', year=year, month=month.value, day=day, hour=image.hour) }}">
                 <img src="{{ image.url }}" alt="" />
             </a>
+            <p>
+                {{ month.name }} {{ day }}, {{ year }}, {{ image.hour_name }}
+            </p>
         </li>
     {% endfor %}
     </ol>
