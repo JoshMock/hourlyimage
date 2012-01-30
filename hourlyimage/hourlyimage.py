@@ -115,6 +115,7 @@ def day(year, month, day):
     """
         Display available images in selected day.
     """
+    # build list of images for that day
     try:
         image_files = generate_tree("%s/%s/%s/%s" % (
                 app.config["IMAGE_LOCATION_DIR"], year, month, day),
@@ -123,15 +124,46 @@ def day(year, month, day):
         abort(404)
     if not image_files:
         abort(404)
-
     images = []
     for hour, image in image_files.iteritems():
         images.append({
             "url": image.replace(app.config["IMAGE_LOCATION_DIR"],
                     app.config["IMAGE_LOCATION_URL"]),
             "hour": hour,
-            "hour_name": datetime(int(year), int(month), int(day), int(hour)).strftime("%I:00 %p"),
+            "hour_name": datetime(int(year), int(month), int(day),
+                int(hour)).strftime("%I:00 %p"),
         })
+
+    # find next/previous days
+    days_tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
+            app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    days = []
+    for iter_year, year_data in days_tree.iteritems():
+        for iter_month, month_data in year_data.iteritems():
+            for iter_day, day_data in month_data.iteritems():
+                days.append((iter_year, iter_month, iter_day))
+    days = sorted(days)
+    print days
+
+    prev_day = None
+    next_day = None
+    for index, a_day in enumerate(days):
+        if a_day == (year, month, day):
+            if index - 1 >= 0:
+                prev_day = days[index - 1]
+                prev_day = {
+                    "year": prev_day[0],
+                    "month": prev_day[1],
+                    "day": prev_day[2]
+                }
+            if index + 1 < len(days):
+                next_day = days[index + 1]
+                next_day = {
+                    "year": next_day[0],
+                    "month": next_day[1],
+                    "day": next_day[2]
+                }
+            break
 
     kwargs = {
         "year": year,
@@ -141,6 +173,8 @@ def day(year, month, day):
         },
         "day": day,
         "images": images,
+        "prev_day": prev_day,
+        "next_day": next_day,
     }
     return render_theme_template(app.config["DEFAULT_THEME"], "day.html",
             **kwargs)

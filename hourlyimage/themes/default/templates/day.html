@@ -4,6 +4,11 @@
 
 {% block main %}
 <h1>{{ month.name }} {{ day }}, {{ year }}</h1>
+
+{% if prev_day %}<a href="{{ url_for('day', year=prev_day.year, month=prev_day.month, day=prev_day.day) }}">previous day</a>{% endif %}
+
+{% if next_day %}<a href="{{ url_for('day', year=next_day.year, month=next_day.month, day=next_day.day) }}">next day</a>{% endif %}
+
 {% if images %}
     <ol id="list-hours">
     {% for image in images|sort %}

@@ -394,5 +394,34 @@ class HourlyImageTestCase(unittest.TestCase):
         rv = self.app.get("/content/foo")
         assert rv.status == "404 NOT FOUND"
 
+    def test_next_previous(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        os.mkdir("%s/2010" % path)
+        os.mkdir("%s/2010/01" % path)
+        os.mkdir("%s/2010/01/01" % path)
+        file1 = open("%s/2010/01/01/01.jpg" % path, "w")
+        file1.write('a')
+        file1.close()
+
+        os.mkdir("%s/2009" % path)
+        os.mkdir("%s/2009/01" % path)
+        os.mkdir("%s/2009/01/01" % path)
+        file2 = open("%s/2009/01/01/01.jpg" % path, "w")
+        file2.write('a')
+        file2.close()
+
+        os.mkdir("%s/2011" % path)
+        os.mkdir("%s/2011/01" % path)
+        os.mkdir("%s/2011/01/01" % path)
+        file3 = open("%s/2011/01/01/01.jpg" % path, "w")
+        file3.write('a')
+        file3.close()
+
+        rv = self.app.get("/images/2010/01/01/")
+        assert "/images/2009/01/01/" in rv.data
+        assert "/images/2011/01/01/" in rv.data
+
+
 if __name__ == '__main__':
     unittest.main()
