@@ -61,6 +61,10 @@ def index():
 
 @app.route("/content/<page_name>")
 def static_pages(page_name):
+    """
+        Enables user to create static content pages by placing partial-HTML
+        files in a provided directory.
+    """
     statics = app.config["STATIC_PAGE_DIR"]
 
     f = None
@@ -168,7 +172,6 @@ def day(year, month, day):
             for iter_day, day_data in month_data.iteritems():
                 days.append((iter_year, iter_month, iter_day))
     days = sorted(days)
-    print days
 
     prev_day = None
     next_day = None
@@ -236,6 +239,9 @@ def hour(year, month, day, hour):
 
 @app.route("/feed/hourly/")
 def rss_hourly():
+    """
+        RSS feed of images, with a new feed item for each hourly image.
+    """
     tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
             app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
 
@@ -287,6 +293,9 @@ def rss_hourly():
 
 @app.route("/feed/daily/")
 def rss_daily():
+    """
+        RSS feed of images, with a new feed item for each available day.
+    """
     domain = app.config["SITE_DOMAIN"]
     path = app.config["IMAGE_LOCATION_DIR"]
     url = app.config["IMAGE_LOCATION_URL"]
