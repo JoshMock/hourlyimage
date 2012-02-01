@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import os
 import re
 from flask import abort, Flask, make_response, Markup, render_template
@@ -26,12 +26,37 @@ setup_themes(app, app_identifier="hourlyimage")
 @app.route("/")
 def index():
     """
-        Display available years.
+        Display available years and current day's images.
     """
     tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
             app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+
+    utc_time = pytz.utc.localize(datetime.utcnow())
+    tz_time = utc_time.astimezone(app.config["TIMEZONE"]) - \
+            timedelta(hours=app.config["OFFSET_HOURS"])
+
+    year = str(tz_time.year)
+    month = "0%s" % tz_time.month if tz_time.month < 10 else str(tz_time.month)
+    day = "0%s" % tz_time.day if tz_time.day < 10 else str(tz_time.day)
+
+    current_day_images = None
+    if tree.get(year, {}).get(month, {}).get(day):
+        current_day_images = []
+        for hour, image in tree[year][month][day].iteritems():
+            hour = int(hour)
+            date_hour = datetime(int(year), tz_time.month, tz_time.day, hour)
+            current_day_images.append({
+                "path": image.replace(app.config["IMAGE_LOCATION_DIR"],
+                    app.config["IMAGE_LOCATION_URL"]),
+                "name": date_hour.strftime("%I:00 %p"),
+            })
+
+    kwargs = {
+        "years": tree.keys(),
+        "current_day": current_day_images,
+    }
     return render_theme_template(app.config["DEFAULT_THEME"], "home.html",
-            years=tree.keys())
+            **kwargs)
 
 
 @app.route("/content/<page_name>")

@@ -1,14 +1,25 @@
 {% extends theme('_themes/default/layout.html') %}
 
 {% block main %}
-    <h1>Available years!</h1>
+    {% if current_day %}
+        <h2>Images for today</h2>
+        <ol>
+        {% for image in current_day %}
+            <li>
+                <div>{{ image.name }}</div>
+                <img src="{{ image.path }}" alt="{{ image.name }}" />
+            </li>
+        {% endfor %}
+        </ol>
+    {% else %}
+        <p>No images available for today.</p>
+    {% endif %}
     {% if years %}
+        <h1>Available years!</h1>
         <ol id="list-years">
         {% for year in years|sort %}
             <li><a href="{{ url_for('year', year=year) }}">{{ year }}</a></li>
         {% endfor %}
         </ol>
-    {% else %}
-        No years found.
     {% endif %}
 {% endblock %}

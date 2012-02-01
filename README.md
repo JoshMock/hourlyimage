@@ -57,7 +57,6 @@ TODOs
  * Pretty 404 and 500 error pages
  * Separate configuration from project
  * "Latest image" view.
- * "Today" view.
  * Complete templating in standards-compliant HTML5.
  * Daily RSS feed doesn't publish current day until it's over (keeping timezone and offset in mind)
  * Add titles to images

@@ -422,6 +422,32 @@ class HourlyImageTestCase(unittest.TestCase):
         assert "/images/2009/01/01/" in rv.data
         assert "/images/2011/01/01/" in rv.data
 
+    def test_current_day(self):
+        path = hourlyimage.app.config["IMAGE_LOCATION_DIR"]
+
+        utc_time = pytz.utc.localize(datetime.datetime.utcnow())
+        tz_time = utc_time.astimezone(hourlyimage.app.config["TIMEZONE"]) - \
+                timedelta(hours=hourlyimage.app.config["OFFSET_HOURS"])
+
+        year = tz_time.year
+        month = "0%s" % tz_time.month if tz_time.month < 10 \
+                else str(tz_time.month)
+        day = "0%s" % tz_time.day if tz_time.day < 10 else \
+                str(tz_time.day)
+        hour = "0%s" % tz_time.hour if tz_time.hour < 10 \
+                else str(tz_time.hour)
+
+        os.mkdir("%s/%s" % (path, year))
+        os.mkdir("%s/%s/%s" % (path, year, month))
+        os.mkdir("%s/%s/%s/%s" % (path, year, month, day))
+        file1 = open("%s/%s/%s/%s/%s.jpg" % (path, year, month, day, hour),
+                "w")
+        file1.write('a')
+        file1.close()
+
+        rv = self.app.get("/")
+        assert "%s/%s/%s/%s.jpg" % (year, month, day, hour) in rv.data
+
 
 if __name__ == '__main__':
     unittest.main()
