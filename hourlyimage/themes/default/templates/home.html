@@ -1,8 +1,15 @@
 {% extends theme('_themes/default/layout.html') %}
 
 {% block main %}
+    <div id="homepage">
+
+    {% if not current_day and not years %}
+        <p>This site doesn't have any images yet!</p>
+    {% endif %}
+
     {% if current_day %}
         <h2>Images for today</h2>
+
         <ol>
         {% for image in current_day %}
             <li>
@@ -12,14 +19,35 @@
         {% endfor %}
         </ol>
     {% else %}
-        <p>No images available for today.</p>
+        <p>No images for today. Check out the archives below!</p>
     {% endif %}
+
     {% if years %}
         <h1>Available years!</h1>
+
         <ol id="list-years">
-        {% for year in years|sort %}
-            <li><a href="{{ url_for('year', year=year) }}">{{ year }}</a></li>
+        {% for year, year_data in years.items()|sort %}
+            <li>
+                <a href="{{ url_for('year', year=year) }}">{{ year }}</a>
+
+                <ol id="list-months">
+                {% for month, month_data in year_data.items()|sort %}
+                    <li>
+                        <a href="{{ url_for('month', year=year, month=month) }}">{{ month }}</a>
+
+                        <ol id="list-days">
+                        {% for day, day_data in month_data.items()|sort %}
+                            <li>
+                                <a href="{{ url_for('day', year=year, month=month, day=day) }}">{{ day }}</a>
+                            </li>
+                        {% endfor %}
+                        </ol>
+                    </li>
+                {% endfor %}
+                </ol>
+            </li>
         {% endfor %}
         </ol>
     {% endif %}
+    </div>
 {% endblock %}

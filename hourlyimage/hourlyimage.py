@@ -52,7 +52,7 @@ def index():
             })
 
     kwargs = {
-        "years": tree.keys(),
+        "years": tree,
         "current_day": current_day_images,
     }
     return render_theme_template(app.config["DEFAULT_THEME"], "home.html",
