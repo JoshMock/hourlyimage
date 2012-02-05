@@ -8,7 +8,6 @@ from pytz import timezone
 import pytz
 
 import hourlyimage
-import utilities
 
 
 class HourlyImageTestCase(unittest.TestCase):

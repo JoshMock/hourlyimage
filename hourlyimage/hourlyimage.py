@@ -3,7 +3,7 @@ import os
 import re
 from flask import abort, Flask, make_response, Markup, render_template
 from flaskext.themes import render_theme_template, setup_themes
-from utilities import generate_tree
+from filetree import FileTree
 from pytz import timezone
 import pytz
 
@@ -28,8 +28,9 @@ def index():
     """
         Display available years and current day's images.
     """
-    tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
-            app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    ft = FileTree(app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    path = app.config["IMAGE_LOCATION_DIR"]
+    tree = ft.generate_tree(path)
 
     utc_time = pytz.utc.localize(datetime.utcnow())
     tz_time = utc_time.astimezone(app.config["TIMEZONE"]) - \
@@ -46,8 +47,7 @@ def index():
             hour = int(hour)
             date_hour = datetime(int(year), tz_time.month, tz_time.day, hour)
             current_day_images.append({
-                "path": image.replace(app.config["IMAGE_LOCATION_DIR"],
-                    app.config["IMAGE_LOCATION_URL"]),
+                "path": image.replace(path, app.config["IMAGE_LOCATION_URL"]),
                 "name": date_hour.strftime("%I:00 %p"),
             })
 
@@ -89,11 +89,14 @@ def year(year):
     """
         Display available months in selected year.
     """
+    ft = FileTree(app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    path = "%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year)
+
     try:
-        tree = generate_tree("%s/%s" % (app.config["IMAGE_LOCATION_DIR"],
-                year), app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+        tree = ft.generate_tree(path)
     except OSError:
         abort(404)
+
     if not tree:
         abort(404)
 
@@ -118,12 +121,14 @@ def month(year, month):
     """
         Display available days in selected month.
     """
+    ft = FileTree(app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    path = "%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year, month)
+
     try:
-        tree = generate_tree("%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"],
-                year, month), app.config["TIMEZONE"],
-                app.config["OFFSET_HOURS"])
+        tree = ft.generate_tree(path)
     except OSError:
         abort(404)
+
     if not tree:
         abort(404)
 
@@ -144,15 +149,17 @@ def day(year, month, day):
     """
         Display available images in selected day.
     """
-    # build list of images for that day
+    ft = FileTree(app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    path = "%s/%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year, month, day)
+
     try:
-        image_files = generate_tree("%s/%s/%s/%s" % (
-                app.config["IMAGE_LOCATION_DIR"], year, month, day),
-                app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+        image_files = ft.generate_tree(path)
     except OSError:
         abort(404)
+
     if not image_files:
         abort(404)
+
     images = []
     for hour, image in image_files.iteritems():
         images.append({
@@ -164,8 +171,7 @@ def day(year, month, day):
         })
 
     # find next/previous days
-    days_tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
-            app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    days_tree = ft.generate_tree(app.config["IMAGE_LOCATION_DIR"])
     days = []
     for iter_year, year_data in days_tree.iteritems():
         for iter_month, month_data in year_data.iteritems():
@@ -213,12 +219,14 @@ def hour(year, month, day, hour):
     """
         Display image for selected hour if it exists.
     """
+    ft = FileTree(app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    path = "%s/%s/%s/%s" % (app.config["IMAGE_LOCATION_DIR"], year, month, day)
+
     try:
-        image_files = generate_tree("%s/%s/%s/%s" % (
-                app.config["IMAGE_LOCATION_DIR"], year, month, day),
-                app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+        image_files = ft.generate_tree(path)
     except OSError:
         abort(404)
+
     if not image_files:
         abort(404)
 
@@ -230,8 +238,10 @@ def hour(year, month, day, hour):
         },
         "day": day,
         "hour": hour,
-        "hour_name": datetime(int(year), int(month), int(day), int(hour)).strftime("%I:00 %p"),
-        "image": image_files[hour].replace(app.config["IMAGE_LOCATION_DIR"], app.config["IMAGE_LOCATION_URL"]),
+        "hour_name": datetime(int(year), int(month), int(day),
+                int(hour)).strftime("%I:00 %p"),
+        "image": image_files[hour].replace(app.config["IMAGE_LOCATION_DIR"],
+                app.config["IMAGE_LOCATION_URL"]),
     }
     return render_theme_template(app.config["DEFAULT_THEME"], "hour.html",
             **kwargs)
@@ -242,8 +252,8 @@ def rss_hourly():
     """
         RSS feed of images, with a new feed item for each hourly image.
     """
-    tree = generate_tree(app.config["IMAGE_LOCATION_DIR"],
-            app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    ft = FileTree(app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    tree = ft.generate_tree(app.config["IMAGE_LOCATION_DIR"])
 
     rss_items= []
     for years, year_data in tree.iteritems():
@@ -299,8 +309,8 @@ def rss_daily():
     domain = app.config["SITE_DOMAIN"]
     path = app.config["IMAGE_LOCATION_DIR"]
     url = app.config["IMAGE_LOCATION_URL"]
-    tree = generate_tree(path, app.config["TIMEZONE"],
-            app.config["OFFSET_HOURS"])
+    ft = FileTree(app.config["TIMEZONE"], app.config["OFFSET_HOURS"])
+    tree = ft.generate_tree(path)
 
     rss_items= []
     for years, year_data in tree.iteritems():
