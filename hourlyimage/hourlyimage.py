@@ -4,22 +4,11 @@ import re
 from flask import abort, Flask, make_response, Markup, render_template
 from flaskext.themes import render_theme_template, setup_themes
 from filetree import FileTree
-from pytz import timezone
 import pytz
 
 
 app = Flask(__name__)
-
-# TODO: change before release
-app.config["IMAGE_LOCATION_DIR"] = \
-        "/Users/joshmock/Documents/Code/hourlyimage_images"
-app.config["IMAGE_LOCATION_URL"] = "/static/images"
-app.config["TIMEZONE"] = pytz.utc
-app.config["OFFSET_HOURS"] = 0
-app.config["SITE_DOMAIN"] = "example.com"
-app.config["STATIC_PAGE_DIR"] = "/Users/joshmock/Documents/Code/hourlyimage_pages"
-app.config["DEFAULT_THEME"] = "default"
-
+app.config.from_envvar("HOURLYIMAGE_SETTINGS")
 setup_themes(app, app_identifier="hourlyimage")
 
 

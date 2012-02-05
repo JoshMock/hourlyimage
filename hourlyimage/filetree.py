@@ -2,7 +2,6 @@ import datetime
 import os
 import re
 import pytz
-from pytz import timezone
 
 from datetime import (
     datetime as createdatetime,
