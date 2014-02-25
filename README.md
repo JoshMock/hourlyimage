@@ -82,3 +82,7 @@ TODOs
 * Daily RSS feed doesn't publish current day until it's over (keeping timezone and offset in mind)
 * Add titles to images
 * Add open-source license
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/JoshMock/hourlyimage/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
